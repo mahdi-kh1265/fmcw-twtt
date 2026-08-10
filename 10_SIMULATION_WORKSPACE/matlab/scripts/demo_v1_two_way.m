@@ -2,20 +2,21 @@
 % V1: Ideal reciprocal two-way FMCW timing demonstration.
 %
 % Generates:
-%   figures/fig02_v1_two_way.png     -- TWTT summary
-%   figures/fig04_theta_recovery.png -- clock-offset recovery sweep
+%   figures/fig02_v1_two_way     -- TWTT summary
+%   figures/fig04_theta_recovery -- clock-offset recovery sweep
 %   results/saeed_morning_summary.md -- PM-facing report
 %
 % Reference: docs/V0_V1_IMPLEMENTATION_SPEC.md, Sections C, D, G, H
 
 %% Setup
 cfg   = make_default_params();
+sty   = fig_style();
 S     = cfg.S;
 Fs    = cfg.Fs;
 N     = cfg.N;
 Tobs  = N / Fs;
 tau   = 5e-9;       % 5 ns propagation delay
-theta = 100e-12;    % 100 ps clock offset
+theta = 100e-12;    % 100 ps clock epoch offset
 
 %% Effective delays (derived in spec A.11)
 delta_AB = tau + theta;
@@ -77,10 +78,8 @@ if ~exist(fig_dir, 'dir'),     mkdir(fig_dir);     end
 if ~exist(results_dir, 'dir'), mkdir(results_dir); end
 
 %% ========== Figure 2: Two-Way FMCW / TWTT Summary ==========
-fig2 = figure('Position', [100 100 900 550], 'Color', 'w', 'Visible', 'off');
+fig2 = figure('Position', sty.fig_wide, 'Color', 'w', 'Visible', 'off');
 
-% --- Left: overlaid beat spectra ---
-subplot(1,2,1);
 N_half   = floor(N/2);
 freq_kHz = fft_AB.freq_axis(1:N_half+1) / 1e3;
 mag_AB   = 20*log10(fft_AB.spectrum_mag(1:N_half+1) / ...
@@ -88,67 +87,87 @@ mag_AB   = 20*log10(fft_AB.spectrum_mag(1:N_half+1) / ...
 mag_BA   = 20*log10(fft_BA.spectrum_mag(1:N_half+1) / ...
            max(fft_BA.spectrum_mag) + 1e-30);
 
-plot(freq_kHz, mag_AB, 'b-', 'LineWidth', 1.2); hold on;
-plot(freq_kHz, mag_BA, 'r-', 'LineWidth', 1.2);
-xline(phase_AB.f_est/1e3, 'b--', 'LineWidth', 1);
-xline(phase_BA.f_est/1e3, 'r--', 'LineWidth', 1);
+% --- Panel (a): Directional spectra (zoomed) ---
+subplot(1,2,1);
 
-xlabel('Frequency [kHz]', 'FontSize', 11);
-ylabel('Magnitude [dB]', 'FontSize', 11);
-title('Directional Beat Spectra', 'FontSize', 12);
-legend(sprintf('A\\rightarrowB: %.1f Hz', phase_AB.f_est), ...
-       sprintf('B\\rightarrowA: %.1f Hz', phase_BA.f_est), ...
+plot(freq_kHz, mag_AB, '-', 'Color', sty.c_blue, 'LineWidth', sty.lw_data); hold on;
+plot(freq_kHz, mag_BA, '-', 'Color', sty.c_red,  'LineWidth', sty.lw_data);
+
+% Theory markers
+xline(link_AB.fb_theory/1e3, '--', 'Color', sty.c_blue, 'LineWidth', sty.lw_theory);
+xline(link_BA.fb_theory/1e3, '--', 'Color', sty.c_red,  'LineWidth', sty.lw_theory);
+
+% FFT nearest-bin (same for both)
+plot(fft_AB.f_peak/1e3, 0, 'v', 'Color', sty.c_gray, ...
+     'MarkerSize', sty.ms_accent, 'MarkerFaceColor', sty.c_gray);
+
+% Phase-slope markers
+plot(phase_AB.f_est/1e3, 0, '^', 'Color', sty.c_blue, ...
+     'MarkerSize', sty.ms_data, 'MarkerFaceColor', sty.c_blue);
+plot(phase_BA.f_est/1e3, 0, '^', 'Color', sty.c_red, ...
+     'MarkerSize', sty.ms_data, 'MarkerFaceColor', sty.c_red);
+
+xlabel('Frequency [kHz]'); ylabel('|Z(f)| [dB]');
+title('(a)  Directional beat spectra', 'FontSize', sty.fs_title);
+lg = legend(sprintf('A{\\rightarrow}B  (f_{AB}=%.1f kHz)', phase_AB.f_est/1e3), ...
+       sprintf('B{\\rightarrow}A  (f_{BA}=%.1f kHz)', phase_BA.f_est/1e3), ...
+       sprintf('f_{AB} theory'), ...
+       sprintf('f_{BA} theory'), ...
+       sprintf('FFT bin: %.1f kHz', fft_AB.f_peak/1e3), ...
        'Location', 'northeast');
-xlim([0 freq_kHz(end)]);
-ylim([-60 5]);
-grid on; set(gca, 'FontSize', 10);
+set(lg, 'FontSize', sty.fs_legend);
+xlim([50 350]);  % zoom around the beat region
+ylim([-50 5]);
+set(gca, 'FontSize', sty.fs_tick); grid on;
+set(gca, 'GridAlpha', 0.25);
 
-% --- Right: recovery summary ---
+% --- Panel (b): Recovery summary ---
 subplot(1,2,2);
 axis off;
-summary = {
+lines = {
     '\bf{Two-Way Recovery}', ...
     '', ...
-    sprintf('\\tau_{hat}   = (f_{AB} + f_{BA}) / (2S)'), ...
-    sprintf('\\theta_{hat} = (f_{AB} - f_{BA}) / (2S)'), ...
+    '{\tau}_{hat} = (f_{AB} + f_{BA}) / (2S)', ...
+    '{\theta}_{hat} = (f_{AB} - f_{BA}) / (2S)', ...
     '', ...
-    sprintf('Injected \\tau:     %.3f ns', tau*1e9), ...
-    sprintf('Injected \\theta:   %.1f ps', theta*1e12), ...
+    sprintf('Injected \\tau :        %.3f ns', tau*1e9), ...
+    sprintf('Injected \\theta :      %.1f ps', theta*1e12), ...
+    '   (relative clock epoch offset)', ...
     '', ...
-    sprintf('f_{AB} est:  %.1f Hz', phase_AB.f_est), ...
-    sprintf('f_{BA} est:  %.1f Hz', phase_BA.f_est), ...
+    sprintf('f_{AB} (phase-slope):  %.1f Hz', phase_AB.f_est), ...
+    sprintf('f_{BA} (phase-slope):  %.1f Hz', phase_BA.f_est), ...
+    sprintf('f_{AB} - f_{BA} :      %.1f Hz', phase_AB.f_est - phase_BA.f_est), ...
     '', ...
-    sprintf('Recovered \\tau:    %.9f ns', tau_hat*1e9), ...
-    sprintf('Recovered \\theta:  %.3f ps', theta_hat*1e12), ...
+    sprintf('Recovered \\tau :       %.3f ns', tau_hat*1e9), ...
+    sprintf('Recovered \\theta :     %.1f ps', theta_hat*1e12), ...
     '', ...
-    sprintf('\\tau error:    %.1e s', abs(tau_hat - tau)), ...
-    sprintf('\\theta error:  %.1e s', abs(theta_hat - theta)), ...
+    sprintf('FFT bin spacing:       %.1f kHz', fft_AB.df/1e3), ...
+    'Both records -> same FFT bin', ...
     '', ...
-    '\bf{IDEAL -- noise-free, matched oscillators,}', ...
-    '\bf{reciprocal path}'
+    '\it{Ideal noise-free model}', ...
+    '\it{Separate directional observations}'
 };
-text(0.05, 0.95, summary, 'Units', 'normalized', ...
-     'VerticalAlignment', 'top', 'FontSize', 10, ...
+text(0.05, 0.95, lines, 'Units', 'normalized', ...
+     'VerticalAlignment', 'top', 'FontSize', sty.fs_annot + 0.5, ...
      'FontName', 'FixedWidth', 'Interpreter', 'tex');
 
-fig2_title = sprintf('V1 TWTT:  tau = %.1f ns,  theta = %.0f ps,  S = %.3f MHz/us', ...
+fig2_title = sprintf('V1 TWTT:  \\tau = %.1f ns,  \\theta = %.0f ps,  S = %.3f MHz/\\mus', ...
         tau*1e9, theta*1e12, S/1e12);
 try
-    sgtitle(fig2_title, 'FontSize', 13, 'FontWeight', 'bold');
+    sgtitle(fig2_title, 'FontSize', sty.fs_title, 'FontWeight', 'bold');
 catch
-    % sgtitle unavailable (Octave / older MATLAB): use annotation instead
-    annotation('textbox', [0.1 0.93 0.8 0.06], 'String', fig2_title, ...
-               'FontSize', 13, 'FontWeight', 'bold', ...
+    annotation('textbox', [0.1 0.93 0.8 0.06], 'String', ...
+               sprintf('V1 TWTT:  tau = %.1f ns,  theta = %.0f ps,  S = %.3f MHz/us', ...
+               tau*1e9, theta*1e12, S/1e12), ...
+               'FontSize', sty.fs_title, 'FontWeight', 'bold', ...
                'HorizontalAlignment', 'center', 'EdgeColor', 'none');
 end
 
-print(fig2, fullfile(fig_dir, 'fig02_v1_two_way.png'), '-dpng', '-r300');
-try exportgraphics(fig2, fullfile(fig_dir, 'fig02_v1_two_way.pdf'), ...
-                   'ContentType', 'vector'); catch, end
+save_fig(fig2, fullfile(fig_dir, 'fig02_v1_two_way'));
 close(fig2);
 fprintf('  Saved: figures/fig02_v1_two_way.png\n');
 
-%% ========== Figure 4: Clock-Offset Recovery Sweep ==========
+%% ========== Figure 4: Clock Epoch Offset Recovery Sweep ==========
 theta_vals = linspace(-1e-9, 1e-9, 41);
 theta_recovered = zeros(size(theta_vals));
 
@@ -161,38 +180,47 @@ for i = 1:length(theta_vals)
     [~, theta_recovered(i)] = solve_twtt(eAB.f_est, eBA.f_est, S);
 end
 
-fig4 = figure('Position', [100 100 800 500], 'Color', 'w', 'Visible', 'off');
+fig4 = figure('Position', sty.fig_wide, 'Color', 'w', 'Visible', 'off');
 
 subplot(2,1,1);
-plot(theta_vals*1e12, theta_recovered*1e12, 'bo', 'MarkerSize', 5); hold on;
-plot(theta_vals*1e12, theta_vals*1e12, 'k--', 'LineWidth', 1);
-% Mark specific points
-markers = [-1000 -100 -10 10 100 1000];
-for m = markers
-    idx = find(abs(theta_vals*1e12 - m) < 0.1, 1);
-    if ~isempty(idx)
-        plot(theta_vals(idx)*1e12, theta_recovered(idx)*1e12, ...
-             'rs', 'MarkerSize', 9, 'MarkerFaceColor', 'r');
-    end
-end
-xlabel('Injected \theta [ps]', 'FontSize', 11);
-ylabel('Recovered \theta_{hat} [ps]', 'FontSize', 11);
-title(sprintf('V1 Clock-Offset Recovery (%s = %.1f ns)   IDEAL -- noise-free', ...
-      '\tau', tau*1e9), 'FontSize', 12);
-legend('Recovered', 'Identity', 'Location', 'northwest');
-grid on; set(gca, 'FontSize', 10);
+plot(theta_vals*1e12, theta_recovered*1e12, 'o', 'Color', sty.c_blue, ...
+     'MarkerSize', sty.ms_data); hold on;
+plot(theta_vals*1e12, theta_vals*1e12, '--', 'Color', sty.c_black, ...
+     'LineWidth', sty.lw_theory);
+xlabel('Injected \theta [ps]');
+ylabel('Recovered \theta_{hat} [ps]');
+title(sprintf('(a)  Relative clock epoch offset recovery  (\\tau = %.1f ns)', tau*1e9), ...
+      'FontSize', sty.fs_title);
+lg = legend('Recovered', 'Identity', 'Location', 'northwest');
+set(lg, 'FontSize', sty.fs_legend);
+set(gca, 'FontSize', sty.fs_tick); grid on;
+set(gca, 'GridAlpha', 0.25);
 
 subplot(2,1,2);
 residual_ps = (theta_recovered - theta_vals) * 1e12;
-plot(theta_vals*1e12, residual_ps, 'ko-', 'MarkerSize', 4, 'LineWidth', 1);
-xlabel('Injected \theta [ps]', 'FontSize', 11);
-ylabel('Residual \theta_{hat} - \theta [ps]', 'FontSize', 11);
-title('Recovery Residual', 'FontSize', 12);
-grid on; set(gca, 'FontSize', 10);
+plot(theta_vals*1e12, residual_ps, 'o-', 'Color', sty.c_black, ...
+     'MarkerSize', 4, 'LineWidth', 1.0); hold on;
+yline(0, '-', 'Color', sty.c_ltgray, 'LineWidth', 0.8);
+xlabel('Injected \theta [ps]');
+ylabel('\theta_{hat} - \theta [ps]');
+title('(b)  Ideal-model numerical closure', 'FontSize', sty.fs_title);
+set(gca, 'FontSize', sty.fs_tick); grid on;
+set(gca, 'GridAlpha', 0.25);
 
-print(fig4, fullfile(fig_dir, 'fig04_theta_recovery.png'), '-dpng', '-r300');
-try exportgraphics(fig4, fullfile(fig_dir, 'fig04_theta_recovery.pdf'), ...
-                   'ContentType', 'vector'); catch, end
+text(0.98, 0.05, 'Floating-point scale; not physical timing precision', ...
+     'Units', 'normalized', 'HorizontalAlignment', 'right', ...
+     'FontSize', sty.fs_annot, 'FontAngle', 'italic', 'Color', sty.c_gray);
+
+try
+    sgtitle('Ideal noise-free model', 'FontSize', sty.fs_subtitle, 'Color', sty.c_gray);
+catch
+    annotation('textbox', [0.25 0.94 0.5 0.05], ...
+               'String', 'Ideal noise-free model', ...
+               'FontSize', sty.fs_subtitle, 'Color', sty.c_gray, ...
+               'HorizontalAlignment', 'center', 'EdgeColor', 'none');
+end
+
+save_fig(fig4, fullfile(fig_dir, 'fig04_theta_recovery'));
 close(fig4);
 fprintf('  Saved: figures/fig04_theta_recovery.png\n');
 
@@ -215,8 +243,9 @@ fprintf(fid, 'under ideal conditions.\n\n');
 fprintf(fid, '## 2. V0 Single-Link Result\n\n');
 fprintf(fid, '| Quantity | Value |\n');
 fprintf(fid, '|---|---|\n');
-fprintf(fid, '| Injected delay | %.3f ns |\n', delta * 1e9);
-v0link = simulate_ideal_link(cfg, delta);
+delta_v0 = 5e-9;
+fprintf(fid, '| Injected delay | %.3f ns |\n', delta_v0 * 1e9);
+v0link = simulate_ideal_link(cfg, delta_v0);
 v0est  = estimate_beat_phase_slope(v0link.beat, Fs);
 v0fft  = estimate_beat_fft(v0link.beat, Fs);
 v0dhat = v0est.f_est / S;
@@ -224,7 +253,7 @@ fprintf(fid, '| Theoretical f_b | %.1f Hz |\n', v0link.fb_theory);
 fprintf(fid, '| Phase-slope estimate | %.1f Hz |\n', v0est.f_est);
 fprintf(fid, '| FFT nearest-bin estimate | %.1f Hz |\n', v0fft.f_peak);
 fprintf(fid, '| Recovered delay | %.9f ns |\n', v0dhat * 1e9);
-fprintf(fid, '| Delay error | %.1e s (floating-point closure, not physical precision) |\n\n', abs(v0dhat - delta));
+fprintf(fid, '| Delay error | %.1e s (floating-point closure, not physical precision) |\n\n', abs(v0dhat - delta_v0));
 
 fprintf(fid, '## 3. V1 Two-Way Result\n\n');
 fprintf(fid, 'In V1, "theta" denotes the **relative clock epoch offset** between stations.\n');
@@ -303,10 +332,20 @@ fprintf(fid, 'Zero-padding interpolates the displayed spectrum; it does not incr
 fprintf(fid, 'observation time or add information.\n\n');
 
 fprintf(fid, '## 7. Figures\n\n');
-fprintf(fid, '- `figures/fig01_v0_single_link.png` -- V0 delay-to-frequency conversion\n');
-fprintf(fid, '- `figures/fig02_v1_two_way.png` -- V1 two-way timing summary\n');
-fprintf(fid, '- `figures/fig03_delay_linearity.png` -- Delay linearity sweep\n');
-fprintf(fid, '- `figures/fig04_theta_recovery.png` -- Clock-offset recovery sweep\n\n');
+fprintf(fid, '### Primary / Saeed-facing\n\n');
+fprintf(fid, '| Figure | Description |\n');
+fprintf(fid, '|---|---|\n');
+fprintf(fid, '| `fig01_v0_single_link` | FMCW delay -> beat conversion |\n');
+fprintf(fid, '| `fig02_v1_two_way` | Two-way recovery of tau and theta |\n');
+fprintf(fid, '| `fig06_slope_timing_sensitivity` | Ideal timing sensitivity vs chirp slope |\n\n');
+fprintf(fid, '### Supporting / Validation\n\n');
+fprintf(fid, '| Figure | Description |\n');
+fprintf(fid, '|---|---|\n');
+fprintf(fid, '| `fig03_delay_linearity` | Delay linearity sweep |\n');
+fprintf(fid, '| `fig04_theta_recovery` | Theta recovery sweep |\n');
+fprintf(fid, '| `fig05_delay_spectrum_family` | Delay-dependent spectrum family |\n\n');
+fprintf(fid, 'The slope sweep in Figure 6 is **illustrative**; hardware chirp constraints\n');
+fprintf(fid, 'have not yet been imposed.\n\n');
 
 fprintf(fid, '## 8. Next Steps\n\n');
 fprintf(fid, '1. **V2 -- AWGN:** Add noise to quantify estimator precision vs SNR.\n');

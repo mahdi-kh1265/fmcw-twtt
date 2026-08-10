@@ -37,6 +37,10 @@ fprintf('\n=== Running Demos ===\n\n');
 demo_v0_single_link;
 fprintf('\n');
 demo_v1_two_way;
+fprintf('\n');
+demo_fig05_spectrum_family;
+fprintf('\n');
+demo_fig06_slope_sensitivity;
 
 %% Done
 fprintf('\n=== ALL DONE -- V0/V1 PASS ===\n');

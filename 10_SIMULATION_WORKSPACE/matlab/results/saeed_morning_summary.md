@@ -113,10 +113,24 @@ observation time or add information.
 
 ## 7. Figures
 
-- `figures/fig01_v0_single_link.png` -- V0 delay-to-frequency conversion
-- `figures/fig02_v1_two_way.png` -- V1 two-way timing summary
-- `figures/fig03_delay_linearity.png` -- Delay linearity sweep
-- `figures/fig04_theta_recovery.png` -- Clock-offset recovery sweep
+### Primary / Saeed-facing
+
+| Figure | Description |
+|---|---|
+| `fig01_v0_single_link` | FMCW delay -> beat conversion |
+| `fig02_v1_two_way` | Two-way recovery of tau and theta |
+| `fig06_slope_timing_sensitivity` | Ideal timing sensitivity vs chirp slope |
+
+### Supporting / Validation
+
+| Figure | Description |
+|---|---|
+| `fig03_delay_linearity` | Delay linearity sweep |
+| `fig04_theta_recovery` | Theta recovery sweep |
+| `fig05_delay_spectrum_family` | Delay-dependent spectrum family |
+
+The slope sweep in Figure 6 is **illustrative**; hardware chirp constraints
+have not yet been imposed.
 
 ## 8. Next Steps
 
