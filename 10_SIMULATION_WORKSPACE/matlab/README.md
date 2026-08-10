@@ -2,12 +2,12 @@
 
 ## Overview
 
-Ideal complex-baseband FMCW timing simulation for two-way time transfer (TWTT) research.
+Ideal analytic complex-baseband FMCW truth model for two-way time transfer (TWTT) research.
 
 - **V0:** Single-link delay-to-beat-frequency truth model
-- **V1:** Reciprocal two-way timing — two V0 links recovering propagation delay and clock offset
+- **V1:** Reciprocal two-way timing — two V0 links recovering propagation delay and relative clock epoch offset
 
-All V0/V1 results are **IDEAL and NOISE-FREE**. They demonstrate mathematical correctness of the FMCW timing model, not achievable hardware performance.
+All V0/V1 results are **IDEAL and NOISE-FREE**. They demonstrate mathematical correctness of the ideal FMCW timing model, not achievable hardware performance. This is not a full radar simulation, hardware digital twin, or realistic AWR2944 precision model.
 
 ## Quick Start
 
@@ -15,7 +15,7 @@ All V0/V1 results are **IDEAL and NOISE-FREE**. They demonstrate mathematical co
 >> run_all
 ```
 
-This runs all 13 unit tests, then both demos, generating all figures and the morning summary report. Works from a clean MATLAB session — no manual path setup required.
+This runs all 13 unit tests, then both demos, generating all figures and the morning summary report. Works from a clean MATLAB/Octave session — no manual path setup required.
 
 ## Structure
 
@@ -43,6 +43,7 @@ matlab/
 ```
 T_A(t) = t              (Station A clock = physical time)
 T_B(t) = t + theta      (positive theta => B clock ahead of A)
+                         (theta = relative clock epoch offset)
 
 delta_AB = tau + theta   (A transmits, B receives)
 delta_BA = tau - theta   (B transmits, A receives)
@@ -55,8 +56,8 @@ theta_hat = (f_AB - f_BA) / (2*S)
 
 See `docs/V0_V1_IMPLEMENTATION_SPEC.md` for the complete binding specification.
 
-## Requirements
+## Runtime Status
 
-- MATLAB (tested R2020b+, no toolboxes required)
-- No Signal Processing Toolbox
-- No Phased Array Toolbox
+- **MATLAB-compatible source.** No toolbox dependencies (no Signal Processing Toolbox, no Phased Array Toolbox).
+- **Runtime verified in GNU Octave 11.3.0.** All 13 tests pass; all outputs regenerate from clean state.
+- **Native MATLAB runtime execution pending.** MATLAB R2025a could not obtain a license on the development machine (error 5201). MATLAB execution has not been verified.

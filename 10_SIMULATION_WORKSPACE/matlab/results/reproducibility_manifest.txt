@@ -1,0 +1,88 @@
+FMCW/TWTT V0/V1 — Reproducibility Manifest
+============================================
+
+Baseline commit:     adb2370
+                     "V0/V1: ideal FMCW timing simulation — all 13 tests pass"
+
+Audit/fix commit:    1ef6fcb
+                     "V0/V1: audit fixes and reproducibility documentation"
+
+Date:                2026-08-10
+
+--- Runtime Environment ---
+
+Operating system:    macOS 26.5.2 (arm64 / Apple Silicon)
+Architecture:        aarch64-apple-darwin25.4.0
+
+GNU Octave version:  11.3.0
+Octave install:      /opt/homebrew/bin/octave (Homebrew)
+
+MATLAB status:       MATLAB-compatible source; native MATLAB runtime execution
+                     pending because MATLAB R2025a could not obtain a license on
+                     the current machine (licensing error 5201).
+                     MATLAB has NOT executed any project code.
+
+--- Verification Command ---
+
+From the repository root:
+
+    octave --no-gui --eval "run('10_SIMULATION_WORKSPACE/matlab/run_all.m')"
+
+This command:
+  1. Adds src/, tests/, scripts/ to the path
+  2. Runs all test groups (T01-T13)
+  3. Runs demo_v0_single_link (generates fig01, fig03)
+  4. Runs demo_v1_two_way (generates fig02, fig04, saeed_morning_summary.md)
+  5. Exits cleanly only if all tests pass
+
+--- Dependencies ---
+
+Required:    Base MATLAB or GNU Octave (no add-on toolboxes or packages)
+NOT needed:  Signal Processing Toolbox
+NOT needed:  Phased Array Toolbox
+NOT needed:  Any Octave Forge packages
+
+--- Generated Outputs ---
+
+figures/fig01_v0_single_link.png   V0 delay-to-frequency conversion
+figures/fig02_v1_two_way.png       V1 two-way timing summary
+figures/fig03_delay_linearity.png  Delay linearity sweep
+figures/fig04_theta_recovery.png   Clock-offset recovery sweep
+results/saeed_morning_summary.md   PM-facing summary report
+
+Optional (MATLAB only, via exportgraphics):
+figures/fig01_v0_single_link.pdf
+figures/fig02_v1_two_way.pdf
+figures/fig03_delay_linearity.pdf
+figures/fig04_theta_recovery.pdf
+
+--- Test Results ---
+
+5 test groups, 13 individual tests: ALL PASS
+
+  test_v0_single_link:       T01-T05 PASSED
+  test_v1_two_way:           T06-T09 PASSED
+  test_fractional_delay:     T10     PASSED
+  test_sign_convention:      T11-T12 PASSED
+  test_waveform_closedform:  T13     PASSED
+
+--- Headline Numerical Values ---
+
+S     = 2.9982e13 Hz/s
+Fs    = 10e6 Hz
+N     = 256
+Tobs  = 25.6 us
+tau   = 5e-9 s
+theta = 100e-12 s
+
+S*tau       = 149910.0 Hz
+S*theta     = 2998.2 Hz
+f_AB        = 152908.2 Hz
+f_BA        = 146911.8 Hz
+f_AB - f_BA = 5996.4 Hz
+Fs/N        = 39062.5 Hz
+FFT peak AB = 156250.0 Hz (nearest-bin)
+FFT peak BA = 156250.0 Hz (nearest-bin)
+
+Recovered tau:   5.000000000 ns  (error ~1e-21 s, floating-point closure)
+Recovered theta: 100.000 ps      (error ~3e-22 s, floating-point closure)

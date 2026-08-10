@@ -30,8 +30,8 @@ function run_all_tests()
         end
     end
 
-    fprintf('\n--- Results: %d passed, %d failed (13 individual tests) ---\n', ...
-            n_pass, n_fail);
+    fprintf('\n--- Results: %d passed, %d failed out of %d test groups ---\n', ...
+            n_pass, n_fail, length(tests));
 
     if n_fail > 0
         error('run_all_tests:failure', '%d test group(s) failed.', n_fail);

@@ -36,7 +36,7 @@ fprintf('  Theoretical f_b:        %.1f Hz\n',          link.fb_theory);
 fprintf('  Phase-slope estimate:   %.1f Hz\n',          phase_res.f_est);
 fprintf('  FFT peak estimate:      %.1f Hz\n',          fft_res.f_peak);
 fprintf('  Recovered delay:        %.9f ns\n',          delta_hat * 1e9);
-fprintf('  Delay error:            %.2e s\n',           abs(delta_hat - delta));
+fprintf('  Delay error:            %.2e s  (floating-point closure)\n',  abs(delta_hat - delta));
 fprintf('  Phase-fit residual:     %.2e rad\n',         phase_res.residual_rms);
 fprintf('  NOTE: FFT peak != truth (nearest-bin limitation)\n');
 fprintf('====================================================\n\n');
