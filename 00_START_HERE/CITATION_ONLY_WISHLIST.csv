@@ -1,0 +1,13 @@
+year,title,authors,doi,category,priority,notes
+2007,Method for High Precision Clock Synchronization in Wireless Systems with Application to Radio Navigation,S. Roehr; P. Gulden; M. Vossiek,10.1109/RWS.2007.351890,clock synchronization,P0,Foundational clock synchronization; full copy not physically present in this runtime.
+2008,Precise Distance Measurement with Cooperative FMCW Radar Units,A. Stelzer; M. Jahn; S. Scheiblhofer,10.1109/RWS.2008.4463606,cooperative FMCW,P0,Core cooperative FMCW ranging paper.
+2008,Precise Distance and Velocity Measurement for Real Time Locating in Multipath Environments Using a Frequency-Modulated Continuous-Wave Secondary Radar Approach,S. Roehr; P. Gulden; M. Vossiek,10.1109/TMTT.2008.2003137,cooperative FMCW,P0,Detailed range/velocity/multipath model.
+2008,Performance Analysis of Cooperative FMCW Radar Distance Measurement Systems,S. Scheiblhofer et al.,10.1109/MWSYM.2008.4633118,precision / phase noise,P0,"Phase-noise performance comparison; web-accessible metadata, PDF not copied."
+2013,A 77-GHz Cooperative Radar System Based on Multi-Channel FMCW Stations for Local Positioning Applications,R. Feger et al.,10.1109/TMTT.2012.2227781,77 GHz cooperative FMCW,P0,Important bridge to 77-GHz hardware.
+2012,Accuracy Limits of a K-Band FMCW Radar with Phase Evaluation,S. Scherr; S. Ayhan; M. Pauli; T. Zwick,,frequency/phase estimation,P0,CRLB and phase-evaluation precision precedent.
+2012,The Effect of Phase Noise on Ranging Uncertainty in FMCW Secondary Radar-Based Local Positioning Systems,R. Ebelt; D. Shmakov; M. Vossiek,,phase noise,P0,Directly relevant to secondary/cooperative FMCW PN.
+1992,Linear FMCW Radar Techniques,A. G. Stove,10.1049/ip-f-2.1992.0048,FMCW fundamentals,P0,Classic reference.
+2023,FMCW Radar Transceiver Synchronization in a Multistatic Microwave Tomography System,B. Lettner,,multistatic synchronization,P0,Thesis-length synchronization treatment.
+2024,On the Synchronization of Uncoupled Multistatic PMCW Radars,D. Werbunat et al.,10.1109/TMTT.2024.3359035,coded / multistatic synchronization,P1,Digital carrier/timing recovery analog for future coded FMCW.
+2024,Over-the-Air Synchronization for Coherent Digital Automotive Radar Networks,L. Sigg et al.,10.1109/TRS.2024.3449333,radar network synchronization,P1,CFO/SFO/timing correction.
+2024,Signal Model for Coherent Processing of Uncoupled and Low Frequency Coupled MIMO Radar Networks,V. Janoudi et al.,10.1109/JMW.2023.3334757,radar network signal model,P1,Strong modern nonideal signal model.

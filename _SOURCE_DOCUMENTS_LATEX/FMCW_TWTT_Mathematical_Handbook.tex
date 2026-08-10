@@ -1,0 +1,631 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.78in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,longtable,array,tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\definecolor{navy}{RGB}{25,54,93}
+\definecolor{slate}{RGB}{75,85,99}
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy,citecolor=navy,pdftitle={FMCW/TWTT Mathematical Handbook}}
+\setlist{nosep,leftmargin=*}
+\setlist[description]{style=nextline}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.52em}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small FMCW / Two-Way Time Transfer Research Corpus}
+\rhead{\small FMCW/TWTT Mathematical Handbook}
+\cfoot{\small Page \thepage\ of \pageref{LastPage}}
+\newcommand{\Saeed}{Saeed}
+\newcommand{\AWR}{AWR2944}
+\newcommand{\DCA}{DCA1000}
+\newcommand{\TWTT}{two-way time transfer}
+\newcommand{\FMCW}{FMCW}
+\newcommand{\codeword}[1]{\path{#1}}
+\newenvironment{keybox}{\begin{center}\begin{minipage}{0.94\textwidth}\hrule\vspace{0.45em}\textbf{Key point.} }{\vspace{0.45em}\hrule\end{minipage}\end{center}}
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{1.2in}
+{\Huge\bfseries\color{navy} FMCW/TWTT Mathematical Handbook\par}
+\vspace{0.3in}
+{\Large Equations, assumptions, units, limiting cases, and failure modes for the MATLAB model\par}
+\vspace{0.6in}
+{\large Summer 2026 - Saeed FMCW/TWTT Project\par}
+\vfill
+{\large Curated research synthesis and engineering reference\par}
+{\large Prepared 10 August 2026\par}
+\vspace{0.4in}
+\begin{minipage}{0.82\textwidth}
+\small
+This document is a project research aid, not a claim of novelty. It distinguishes source-supported prior art, engineering inference, and proposed simulation steps. Publisher/IEEE PDFs supplied by the user are retained in the archive for private research and are not represented as redistributable.
+\end{minipage}
+\end{titlepage}
+\tableofcontents
+\clearpage
+
+\section{Notation and clock model}
+Use SI units internally. Let $c$ denote propagation speed (use the exact speed of light in vacuum for an ideal free-space simulation). Let station $A$ and station $B$ have local clock readings
+\[
+T_A(t)=(1+\epsilon_A)t+\theta_A+\nu_A(t),\qquad
+T_B(t)=(1+\epsilon_B)t+\theta_B+\nu_B(t),
+\]
+where $t$ is an ideal reference time, $\theta_i$ is epoch offset, $\epsilon_i$ is fractional rate error, and $\nu_i(t)$ is stochastic timing jitter/wander. Relative quantities are
+\[
+\theta=\theta_B-\theta_A,\qquad \epsilon=\epsilon_B-\epsilon_A.
+\]
+For the first ideal simulation set $\epsilon=0$ and $\nu_i=0$, but retain $\theta$ as the unknown to recover.
+
+\textbf{Failure mode:} calling a shared oscillator ``time synchronization'' is incorrect. Equal rates ($\epsilon=0$) do not imply equal epochs ($\theta=0$), and neither condition guarantees equal RF phase.
+
+\section{Linear FMCW chirp}
+A convenient complex analytic chirp is
+\[
+s(t)=A\exp\left\{j\left[\phi_0+2\pi f_0t+\pi St^2\right]\right\},\qquad 0\le t<T_c,
+\]
+with instantaneous frequency
+\[
+f(t)=\frac{1}{2\pi}\frac{d\phi}{dt}=f_0+St.
+\]
+The slope is
+\[
+S=\frac{B}{T_c}\quad [\mathrm{Hz/s}],
+\]
+where $B$ is sweep bandwidth and $T_c$ is ramp duration.
+
+\textbf{Units check:} $B$ is Hz, $T_c$ is s, so $S$ is Hz/s. Multiplying $S$ by a delay in seconds yields a beat frequency in Hz.
+
+\section{Delay and range conventions}
+For an active one-way link of separation $d$,
+\[
+\tau=\frac{d}{c}.
+\]
+For a monostatic reflection at range $R$,
+\[
+\tau=\frac{2R}{c}.
+\]
+Therefore a timing error of 10 ps corresponds to a one-way path length of roughly 3 mm; if the same 10-ps quantity were a monostatic round-trip delay it would correspond to roughly 1.5 mm of range.
+
+\section{Dechirping derivation}
+Let the received one-way signal be an attenuated delayed copy
+\[
+r(t)=\alpha s(t-\tau).
+\]
+Using the convention $z(t)=s(t)r^*(t)$,
+\begin{align}
+\phi_z(t)
+&=\phi(t)-\phi(t-\tau)\\
+&=2\pi f_0\tau+2\pi S\tau t-\pi S\tau^2.
+\end{align}
+Thus the beat frequency is
+\[
+\boxed{f_b=S\tau}.
+\]
+Changing the mixer/conjugation order changes the sign. The physical estimator must use one convention consistently.
+
+For monostatic range,
+\[
+\boxed{R=\frac{c f_b}{2S}}.
+\]
+For an ideal active one-way link,
+\[
+\boxed{d=\frac{c f_b}{S}}.
+\]
+
+\section{Beat phase}
+At a chosen time origin the beat has phase
+\[
+\phi_b(t)=2\pi S\tau t + \phi_{b,0},
+\]
+where
+\[
+\phi_{b,0}=2\pi f_0\tau-\pi S\tau^2 + \Delta\phi_0
+\]
+for the selected convention. When $\tau$ is small enough that the quadratic term is negligible, the phase sensitivity is approximately
+\[
+\frac{d\phi_b}{d\tau}\approx 2\pi f_0.
+\]
+This is extraordinarily sensitive at 77 GHz, but phase is ambiguous modulo $2\pi$. Beat frequency provides coarse/unambiguous information; phase provides fine local correction.
+
+\section{Ideal reciprocal two-way time transfer}
+Assume reciprocal physical propagation delay $\tau$ and relative clock epoch offset $\theta$. Define effective measured delays under one sign convention:
+\[
+\delta_{AB}=\tau+\theta,\qquad
+\delta_{BA}=\tau-\theta.
+\]
+Then
+\[
+\boxed{\tau=\frac{\delta_{AB}+\delta_{BA}}{2}},\qquad
+\boxed{\theta=\frac{\delta_{AB}-\delta_{BA}}{2}}.
+\]
+If both directions use the same known slope $S$ and all other offsets are zero,
+\[
+f_{AB}=S(\tau+\theta),\qquad
+f_{BA}=S(\tau-\theta),
+\]
+so
+\[
+\boxed{\hat\tau=\frac{f_{AB}+f_{BA}}{2S}},\qquad
+\boxed{\hat\theta=\frac{f_{AB}-f_{BA}}{2S}}.
+\]
+
+\textbf{Assumptions:} same signed slope, reciprocal propagation, no carrier-frequency offset, no clock skew over the observation, no unequal hardware group delay, and an estimator that preserves beat sign.
+
+\section{Two-way hardware-delay asymmetry}
+Let the effective fixed transmit/receive delays be $g_A^{TX},g_A^{RX},g_B^{TX},g_B^{RX}$. Then a simple timestamp-like model is
+\[
+\delta_{AB}=\tau+\theta+g_A^{TX}+g_B^{RX},
+\]
+\[
+\delta_{BA}=\tau-\theta+g_B^{TX}+g_A^{RX}.
+\]
+The two-way estimates become
+\[
+\hat\tau=\tau+\frac{g_A^{TX}+g_A^{RX}+g_B^{TX}+g_B^{RX}}{2},
+\]
+\[
+\hat\theta=\theta+\frac{(g_A^{TX}-g_A^{RX})-(g_B^{TX}-g_B^{RX})}{2}.
+\]
+Thus reciprocal over-the-air propagation does not magically calibrate internal asymmetry. Absolute time-transfer accuracy requires calibration; repeatability/precision can be much better than uncalibrated accuracy.
+
+\section{Carrier-frequency offset}
+Suppose the received remote chirp has carrier offset $\Delta f$ relative to the local chirp but equal slope. Then the dechirped instantaneous beat becomes approximately
+\[
+f_b = S\tau + \Delta f
+\]
+(up to sign convention). A single up-chirp cannot distinguish delay from CFO. Using both up and down slopes,
+\[
+f_+=\Delta f+S\tau,\qquad f_-=\Delta f-S\tau,
+\]
+so
+\[
+\Delta f=\frac{f_++f_-}{2},\qquad \tau=\frac{f_+-f_-}{2S}.
+\]
+This is the core reason the early cooperative synchronization literature uses multiple slope directions.
+
+\section{Slope mismatch}
+Let the remote and local slopes differ by $\Delta S$. The frequency difference is no longer constant:
+\[
+f_b(t)\approx \Delta f + S\tau + \Delta S\,t + \text{small cross terms}.
+\]
+The beat is itself chirped. A pure-tone estimator becomes biased or broadened. In simulation, slope mismatch should be represented at waveform generation, not inserted as arbitrary additive beat noise.
+
+\section{Clock skew}
+If relative clock offset evolves as
+\[
+\theta(t)=\theta_0+\epsilon t,
+\]
+then an FMCW timing beat caused by $\theta$ drifts in time. To first order, substituting $\theta(t)$ into $S(\tau\pm\theta)$ produces a linear beat-frequency drift proportional to $S\epsilon$. Sample-clock frequency error also rescales the digital time axis, causing an additional estimator bias. Keep waveform-clock skew and ADC/sample-clock skew as separate parameters if the hardware architecture permits them to differ.
+
+\section{Doppler}
+For a narrowband approximation with radial velocity $v$, Doppler frequency is
+\[
+f_D\approx \frac{2v}{\lambda}
+\]
+for a monostatic reflection and depends on bistatic geometry for a distributed link. In ordinary sawtooth FMCW,
+\[
+f_b\approx S\tau+f_D.
+\]
+Up/down ramps can help separate range and Doppler because the range contribution changes sign with slope while Doppler does not under the conventional formulation.
+
+For the first TWTT simulation, set $v=0$. Add Doppler only after the clock-offset algebra is validated.
+
+\section{Sampling and the FFT}
+With sample rate $F_s$, $N$ samples, and observation duration $T_{obs}=N/F_s$, the DFT bin spacing is
+\[
+\Delta f_{DFT}=\frac{F_s}{N}=\frac{1}{T_{obs}}.
+\]
+Zero padding makes a denser display/interpolation grid but does not create new information. A sinusoid can nevertheless be estimated to a small fraction of $\Delta f_{DFT}$ when SNR and model fidelity are adequate.
+
+For $F_s=10$ MS/s and $N=256$,
+\[
+T_{obs}=25.6\ \mu\mathrm{s},\qquad \Delta f_{DFT}=39.0625\ \mathrm{kHz}.
+\]
+At $S=29.982\ \mathrm{MHz}/\mu\mathrm{s}$,
+\[
+10\ \mathrm{ps}\rightarrow 299.82\ \mathrm{Hz},\quad
+100\ \mathrm{ps}\rightarrow 2.9982\ \mathrm{kHz},\quad
+1\ \mathrm{ns}\rightarrow 29.982\ \mathrm{kHz}.
+\]
+So 10 ps is far below one raw FFT bin in the current short observation. That is an estimator-design problem, not an algebra error.
+
+\section{Phase-slope frequency estimator}
+For a high-SNR complex tone
+\[
+z[n]=A e^{j(2\pi f_b n/F_s+\phi_0)}+w[n],
+\]
+unwrapping phase and fitting a straight line gives
+\[
+\angle z[n]\approx \frac{2\pi f_b}{F_s}n+\phi_0.
+\]
+A least-squares slope $\hat m$ yields
+\[
+\hat f_b=\frac{F_s}{2\pi}\hat m.
+\]
+This is a useful first sub-bin estimator because it is transparent and easy to unit-test. It is not optimal under all noise/distortion conditions, so later compare it with CZT/interpolated-DFT and nonlinear sinusoid fits.
+
+\section{CZT refinement}
+The chirp-z transform evaluates the $z$-transform along a user-chosen contour and can sample a narrow frequency interval much more densely than a full-band FFT. The Scherr paper uses this property to refine FMCW beat frequency efficiently and then evaluates phase. In the simulator:
+\begin{enumerate}
+\item use FFT to find a coarse peak region;
+\item place a narrow CZT interval around it;
+\item estimate the refined frequency;
+\item evaluate complex phase at the refined frequency;
+\item combine coarse range and fine phase only after ambiguity handling is defined.
+\end{enumerate}
+
+\section{Generic sinusoid frequency CRLB scaling}
+For a single complex sinusoid in white Gaussian noise, the exact Cramer-Rao expression depends on the chosen SNR and amplitude/phase nuisance-parameter convention. A commonly encountered scaling is
+\[
+\operatorname{var}(\hat f)\propto \frac{F_s^2}{\mathrm{SNR}\,N(N^2-1)}.
+\]
+The important project-level implications are robust even when convention-dependent constants differ:
+\begin{itemize}
+\item precision improves rapidly with coherent observation length;
+\item precision improves with SNR;
+\item mapping frequency error to timing error divides by slope, $\sigma_\tau\approx \sigma_f/|S|$;
+\item colored phase noise, nonlinearity, multipath, and model mismatch can dominate long before the white-noise CRLB is reached.
+\end{itemize}
+The simulation report should quote the exact CRLB formula only alongside the estimator/noise convention used.
+
+\section{Delay-estimation bandwidth intuition}
+For a known waveform in white noise, time-delay CRLBs scale inversely with SNR and the square of an effective/root-mean-square signal bandwidth. This is the deeper reason both UWB pulses and spectrally separated two-tone synchronization can achieve excellent timing precision. FMCW gives a practical way to exploit a wide frequency excursion while keeping the post-dechirp ADC burden low.
+
+\section{Thermal and receiver noise}
+At an input-equivalent noise temperature $T_0$ and bandwidth $B_n$, available thermal noise power is approximately
+\[
+P_n=kT_0B_n.
+\]
+Receiver noise figure increases the effective noise floor. In a sampled complex-baseband truth model, the simplest correct first step is to inject complex AWGN at a specified post-dechirp SNR. A hardware-faithful model should instead propagate gain/noise figure and IF filter bandwidth to the ADC.
+
+\section{ADC quantization}
+For an ideal $N_b$-bit full-scale sinusoidal ADC, the familiar quantization-limited SNR approximation is
+\[
+\mathrm{SNR}_{q}\approx 6.02N_b+1.76\ \mathrm{dB},
+\]
+but real ENOB and the actual signal level should be used when available. Quantization should be modeled after analog/IF filtering and scaling, not as an arbitrary equivalent range error.
+
+\section{Phase-noise model}
+Write the transmitted phase as
+\[
+\phi_{TX}(t)=\phi_{ideal}(t)+\phi_{sys}(t)+\phi_{PN}(t).
+\]
+A useful systematic model is
+\[
+\phi_{sys}(t)=\sum_{k=0}^{K} a_k t^k + A_s\sin(2\pi f_s t+\psi_s)+\cdots
+\]
+and $\phi_{PN}(t)$ should be generated from a colored PSD when precision matters. The Tschapek workflow is: characterize PSD/systematic terms, synthesize virtual distorted chirps, run Monte Carlo radar estimation, and compare precision metrics.
+
+\section{Range correlation of oscillator phase noise}
+In a homodyne monostatic system using the same oscillator for TX and LO, the phase-noise contribution after dechirp has the difference form
+\[
+\phi_{PN,out}(t)=\phi_{PN}(t)-\phi_{PN}(t-\tau).
+\]
+In frequency domain the differencing has magnitude-squared response
+\[
+|1-e^{-j2\pi f\tau}|^2=4\sin^2(\pi f\tau).
+\]
+Low-offset-frequency phase noise is therefore strongly suppressed for sufficiently short delay. With independent TX and LO oscillators, the noise terms are not correlated and this cancellation is largely lost. Reciprocal/full-duplex processing can restore cancellation of some common structured terms, which is central to CFDDS-style methods.
+
+\section{Chirp nonlinearity}
+Let instantaneous frequency be
+\[
+f(t)=f_0+St+e_f(t).
+\]
+Then phase contains the integrated error
+\[
+\phi(t)=\phi_0+2\pi f_0t+\pi St^2+2\pi\int_0^t e_f(u)\,du.
+\]
+The beat frequency becomes time dependent according to the difference between error trajectories sampled at $t$ and $t-\tau$. Therefore simulate nonlinearity at the chirp phase/frequency level. Useful $e_f(t)$ test cases are:
+\begin{itemize}
+\item quadratic/cubic deterministic curvature;
+\item sinusoidal spur modulation;
+\item measured residual error trace;
+\item random colored frequency error tied to phase-noise PSD.
+\end{itemize}
+
+\section{IF filtering and group delay}
+An IF filter with transfer function $H(f)=|H(f)|e^{j\phi_H(f)}$ has group delay
+\[
+\tau_g(f)=-\frac{1}{2\pi}\frac{d\phi_H(f)}{df}.
+\]
+If $\tau_g$ differs between stations or directions, a reciprocal air path can still yield biased two-way timing. The hardware model should therefore support per-station complex IF transfer functions or at least constant + linear group-delay approximations.
+
+\section{Multipath}
+For $L$ propagation paths,
+\[
+r(t)=\sum_{\ell=1}^{L}\alpha_\ell s(t-\tau_\ell)e^{j\psi_\ell}.
+\]
+After dechirp, multiple paths become multiple beat components. If they are unresolved, the observed complex tone is a vector sum whose phase/frequency estimate can be biased. This is particularly dangerous for picosecond timing because a weak nearby path can perturb phase substantially even when the coarse range peak looks clean.
+
+\section{Phase-coded FMCW}
+Let a unit-modulus phase code be
+\[
+c(t)=e^{j\phi_c(t)}.
+\]
+A coded chirp is
+\[
+s_c(t)=s(t)c(t).
+\]
+A delayed return contains $c(t-\tau)$ while local decoding uses some reference $c(t)$. Their misalignment creates a delay-dependent code term. The first conceptual simulation can correlate/realign the code in discrete time. A more faithful PC-FMCW model should include the group-delay filtering or equivalent alignment described in the phase-coded FMCW literature and verify that the required baseband sampling rate remains realistic.
+
+\section{Processing gain and coherent integration}
+For $M$ repeated coherent observations with identical phase relation and independent additive noise, coherent summation ideally increases signal amplitude by $M$ and noise RMS by $\sqrt{M}$, giving an SNR gain of $M$ (or $10\log_{10}M$ dB). This ideal gain fails when inter-chirp phase is not stable. Therefore multi-chirp timing precision is inseparable from chirp-to-chirp phase coherence.
+
+\section{AWR2944 parameter mapping}
+The MATLAB parameter struct should distinguish conceptual and hardware fields:
+\begin{longtable}{p{0.28\textwidth}p{0.25\textwidth}p{0.39\textwidth}}
+\toprule Math parameter & Hardware/config analogue & Note \\ \midrule
+$f_0$ & profile start frequency & RF carrier/chirp start \\
+$S$ & profile frequency slope & convert MHz/us to Hz/s exactly \\
+$T_c$ & ramp end/active time & ADC window may be shorter than total ramp \\
+$F_s$ & ADC sample rate & baseband sample rate, not RF carrier sampling \\
+$N$ & ADC samples/chirp & sets raw observation window \\
+$B_{IF}$ & analog/digital IF bandwidth & constrains usable beat frequency \\
+$M$ & chirps/frame / coherent set & phase coherence must be verified \\
+$\phi_{TX,k}$ & TX phase shifter settings & relevant to MIMO, not timing by itself \\
+reference clock & external clock input & syntonization does not guarantee absolute time/phase \\
+trigger timing & frame/chirp event mechanism & must be characterized in two-board setup \\
+\bottomrule
+\end{longtable}
+
+\section{Numerical sanity checks for the current slope}
+Using $S=29.982\times10^{12}$ Hz/s:
+\begin{align*}
+S(10\ \mathrm{ps})&=299.82\ \mathrm{Hz},\\
+S(100\ \mathrm{ps})&=2.9982\ \mathrm{kHz},\\
+S(1\ \mathrm{ns})&=29.982\ \mathrm{kHz},\\
+S(5\ \mathrm{ns})&=149.91\ \mathrm{kHz}.
+\end{align*}
+For an illustrative two-way case $\tau=5$ ns, $\theta=100$ ps,
+\[
+f_{AB}=S(5.1\ \mathrm{ns})\approx152.9082\ \mathrm{kHz},
+\]
+\[
+f_{BA}=S(4.9\ \mathrm{ns})\approx146.9118\ \mathrm{kHz}.
+\]
+Their average divided by $S$ gives 5 ns, and half-difference divided by $S$ gives 100 ps.
+
+\section{Simulation invariant checklist}
+Every time an impairment is added, rerun the following baseline tests:
+\begin{enumerate}
+\item $\tau=0,\theta=0$;
+\item known fractional $\tau$ not aligned to sample spacing;
+\item slope scaling test $S\rightarrow2S$;
+\item sign-convention test for conjugation/mixer order;
+\item two-way sum/difference test;
+\item noise-free estimator reaches numerical precision;
+\item all impairment switches off returns the exact ideal result;
+\item each impairment on by itself matches an analytic first-order prediction.
+\end{enumerate}
+
+\section{What not to do}
+\begin{itemize}
+\item Do not sample a 77-GHz real cosine at hundreds of gigasamples/s for the first model.
+\item Do not implement 10-ps delay by rounding to the nearest ADC sample.
+\item Do not equate FFT-bin width with estimator precision.
+\item Do not combine CFO, clock skew, trigger offset, and phase noise into one ``clock error'' scalar.
+\item Do not claim two-way cancellation removes fixed hardware asymmetry unless it is modeled/calibrated.
+\item Do not add phase coding before the uncoded two-way algebra passes unit tests.
+\end{itemize}
+
+\section{Reference anchors}
+The equations and modeling choices in this handbook are anchored primarily to the Roehr 2007 cooperative synchronization paper, Scherr 2015 frequency/phase estimator paper, Herzel 2018 PLL precision analysis, Gottinger 2019 CFDDS-TWR paper, Tschapek 2022 phase-distortion model, Scheiblhofer 2008 simulator architecture, classical two-way time-transfer references, and TI AWR2944/chirp documentation. Exact sign conventions should be re-derived in code from the chosen complex mixer definition rather than copied mechanically from any one source.
+
+
+\clearpage
+\section{General two-oscillator chirp derivation}
+A more realistic two-node model gives each station its own carrier, slope, phase, and local time. Let
+\[
+\phi_A(t)=\phi_{A0}+2\pi f_A T_A(t)+\pi S_A T_A^2(t)+\eta_A(t),
+\]
+\[
+\phi_B(t)=\phi_{B0}+2\pi f_B T_B(t)+\pi S_B T_B^2(t)+\eta_B(t),
+\]
+where $\eta_i$ groups stochastic and systematic phase distortions. The signal transmitted by A and received at B is evaluated at physical time $t-\tau_{AB}$ but mixed against B's current local oscillator. Ignoring amplitude for clarity, a cross-link beat phase can be represented as
+\[
+\Phi_{AB}(t)=\phi_B(t)-\phi_A(t-\tau_{AB})+\phi_{ch,AB}(t).
+\]
+Differentiating gives the instantaneous beat frequency. This equation is the safest general starting point because ideal delay, CFO, clock skew, slope mismatch, phase noise, Doppler/channel phase, and group-delay corrections can all be introduced explicitly before simplifying.
+
+\subsection{First-order expansion}
+Around small relative errors, write $f_B=f_A+\Delta f$, $S_B=S_A+\Delta S$, and $T_B(t)\approx t+\theta+\epsilon t$. Keeping only first-order terms produces a beat containing a constant delay term $S\tau$, a constant/slow CFO term $\Delta f$, a slope-mismatch drift $\Delta S\,t$, and clock-skew-dependent drift. The exact signs depend on mixer convention. In code, derive the expected sign numerically from the general phase equation and freeze it in unit tests.
+
+\section{Four timestamps and canonical two-way transfer}
+Classical two-way time transfer is often written with four local timestamps:
+\begin{itemize}
+\item $t_1$: A transmits according to clock A;
+\item $t_2$: B receives according to clock B;
+\item $t_3$: B transmits response according to clock B;
+\item $t_4$: A receives according to clock A.
+\end{itemize}
+For reciprocal propagation and negligible motion over the exchange, the conventional offset/range combinations can be formed from $(t_2-t_1)$ and $(t_4-t_3)$. FMCW replaces direct timestamping of an edge with an estimate of the effective relative delay embedded in phase/frequency. The same calibration logic still applies.
+
+\section{Nonreciprocal propagation}
+Let forward and reverse propagation delays be
+\[
+\tau_{AB}=\tau+\frac{\Delta\tau_{nr}}{2},\qquad
+\tau_{BA}=\tau-\frac{\Delta\tau_{nr}}{2}.
+\]
+Then the ideal two-way offset solution is biased by
+\[
+\hat\theta=\theta+\frac{\Delta\tau_{nr}}{2}
+\]
+(up to sign convention). Any motion between the two directional measurements, different RF frequencies, polarization-dependent paths, or asymmetric hardware/channel group delay can therefore masquerade as clock offset.
+
+\section{Moving nodes during reciprocal exchange}
+If separation changes as $d(t)=d_0+vt$, propagation delay changes by approximately $v\Delta t/c$ across an exchange interval $\Delta t$. For a 10-ps objective, even small physical motion can matter if the two directions are not simultaneous. Full-duplex double-sided methods reduce this temporal separation compared with sequential request/response schemes. A simulation should therefore include the exact transmit times of each directional chirp when motion is enabled.
+
+\section{Phase ambiguity and synthetic wavelength}
+A phase measurement at carrier $f_c$ is periodic in delay with period
+\[
+\Delta\tau_{2\pi}=\frac{1}{f_c},
+\]
+which corresponds to a one-way distance period $c/f_c=\lambda$. Combining phases at two frequencies $f_1$ and $f_2$ produces a beat/synthetic wavelength
+\[
+\Lambda=\frac{c}{|f_2-f_1|}.
+\]
+This is another way to understand why multi-frequency/two-tone methods can achieve fine phase sensitivity while extending unambiguous range. FMCW continuously sweeps many frequencies and uses the beat slope/frequency to resolve coarse delay.
+
+\section{Frequency/phase fusion}
+Suppose a coarse estimate $\tau_c$ from beat frequency identifies the correct phase ambiguity interval. A fine phase residual $\Delta\phi$ at effective carrier $f_{eff}$ gives approximately
+\[
+\Delta\tau_\phi=\frac{\Delta\phi}{2\pi f_{eff}}.
+\]
+A fused estimate can be written
+\[
+\hat\tau=\tau_c+\Delta\tau_\phi,
+\]
+provided $\tau_c$ is accurate enough to choose the correct integer phase cycle. In practice, $f_{eff}$ and constant phase terms should be derived from the full chirp phase equation rather than assuming exactly $f_0$.
+
+\section{Phase unwrap by model fitting}
+For a complex beat observed at samples $n$, a robust phase model is
+\[
+\phi[n]=\phi_0+\omega n + q[n],
+\]
+where $q[n]$ contains residual nonlinearity/noise. Rather than unwrapping point-by-point when SNR is low, one can fit the complex exponential directly:
+\[
+\min_{A,\phi_0,\omega}\sum_n\left|z[n]-Ae^{j(\omega n+\phi_0)}\right|^2.
+\]
+This nonlinear least-squares/maximum-likelihood viewpoint is useful because it handles frequency and phase jointly and avoids some unwrap failures. It is computationally heavier than a simple phase slope or CZT.
+
+\section{Windowing and spectral leakage}
+If a finite observation does not contain an integer number of beat cycles, a rectangular window spreads energy through sinc sidelobes. A window $w[n]$ changes both main-lobe width and estimator variance. For plot-only FFTs, Hann-like windows reduce sidelobes; for precision estimation, the chosen estimator and its CRLB should account for the window. Never compare two estimator variances while silently changing window functions.
+
+\section{Zero padding}
+With zero padding factor $K$, the FFT display grid becomes
+\[
+\Delta f_{grid}=\frac{F_s}{KN}.
+\]
+The underlying observation time remains $N/F_s$. Thus zero padding can improve peak interpolation and visual presentation but does not by itself create the information of a $KN$-sample observation. This distinction should be demonstrated in one simulation figure because it is pedagogically valuable.
+
+\section{White-noise frequency CRLB with explicit convention}
+For the model
+\[
+x[n]=A e^{j(\omega n+\phi)}+w[n],\qquad w[n]\sim\mathcal{CN}(0,\sigma^2),
+\]
+and defining complex-sample SNR as $\rho=A^2/\sigma^2$, one common form for unknown amplitude/phase gives a frequency-in-radians/sample variance proportional to
+\[
+\operatorname{var}(\hat\omega)\ge \frac{6}{\rho N(N^2-1)}.
+\]
+Converted to hertz,
+\[
+\operatorname{var}(\hat f)\ge
+\left(\frac{F_s}{2\pi}\right)^2
+\frac{6}{\rho N(N^2-1)}.
+\]
+Different noise/SNR definitions can introduce factors of two, so code and report must state the convention. The corresponding ideal timing standard deviation is
+\[
+\sigma_\tau\ge \frac{\sigma_f}{|S|}.
+\]
+Use this only as a white-noise benchmark; it is not a bound for a misspecified colored-phase-noise model.
+
+\section{Fisher information for delay}
+For a known deterministic complex waveform $s(t-\tau)$ in AWGN, delay Fisher information is proportional to the energy of its time derivative,
+\[
+\mathcal I_\tau\propto \frac{1}{N_0}\int \left|\frac{ds(t)}{dt}\right|^2dt.
+\]
+In frequency domain this weights signal energy by frequency squared. After removing an arbitrary carrier-phase nuisance, the relevant quantity is related to rms bandwidth. This formalizes the intuitive statement that widely separated frequencies carry strong delay information.
+
+\section{Allan deviation and clock stability}
+Clock frequency stability is often described by fractional-frequency fluctuations $y(t)$ and Allan deviation $\sigma_y(\tau_a)$ over averaging time $\tau_a$. A constant fractional frequency error $\epsilon$ causes time offset to grow approximately linearly, $\theta(t)=\theta_0+\epsilon t$. Stochastic oscillator noise produces different power-law growth depending on noise type. For long-duration synchronization simulations, specifying only a one-shot CFO is insufficient; an Allan-deviation/power-law clock model may be more appropriate.
+
+For the first chirp-scale model, however, a constant CFO + white/colored phase-noise process is enough. Do not introduce Allan-noise complexity before the estimator is validated.
+
+\section{Phase-noise PSD synthesis algorithm}
+Given a target single-sideband phase-noise mask $L(f)$ in dBc/Hz, a practical numerical workflow is:
+\begin{enumerate}
+\item convert the chosen convention to a phase PSD $S_\phi(f)$ in $\mathrm{rad}^2/\mathrm{Hz}$;
+\item create a symmetric frequency grid compatible with the simulation record length;
+\item draw complex Gaussian frequency-domain samples with variance proportional to $S_\phi(f)\Delta f$ and Hermitian symmetry for a real phase process;
+\item inverse FFT to obtain $\phi_{PN}(t)$;
+\item verify the generated PSD by ensemble averaging;
+\item add $\phi_{PN}(t)$ to phase, not to amplitude.
+\end{enumerate}
+Be explicit about one-sided versus two-sided PSD and the relation between SSB $L(f)$ and phase PSD. This is an easy place to make a 3-dB or factor-of-two mistake.
+
+\section{Correlated versus independent phase noise}
+For two oscillators with phase processes $\phi_A$ and $\phi_B$, allow a correlation coefficient or shared/reference component:
+\[
+\phi_A=\phi_c+\phi_{A,u},\qquad
+\phi_B=\phi_c+\phi_{B,u}.
+\]
+A shared reference can reduce low-frequency relative phase/frequency noise without making the high-frequency PLL/VCO noise identical. Modeling separate common and uncorrelated components is more realistic than either ``same phase noise'' or ``completely independent'' when the boards share a low-frequency reference.
+
+\section{PLL settling and ramp transients}
+A fast frequency ramp through a PLL is not necessarily an exact parabola in phase. Loop bandwidth and charge-pump/synthesizer dynamics can cause settling/overshoot near segment boundaries. If the ADC valid window begins after a settling interval, much of this transient may be excluded. Therefore the AWR-faithful simulator should model the actual ADC start time relative to ramp start before adding a detailed PLL transient model.
+
+\section{Near-DC beat considerations}
+A timing-induced beat of only hundreds of hertz can fall close to DC where analog high-pass filters, flicker noise, LO leakage, DC offsets, and digital clutter-removal algorithms are strongest. A deliberate known frequency offset $f_{off}$ can move the beat away from DC:
+\[
+f_b=f_{off}+S\tau.
+\]
+After estimating $f_b$, subtract $f_{off}$ in processing. The offset itself must be stable/calibrated and should not push the beat outside the IF bandwidth.
+
+\section{Coded-waveform correlation}
+For discrete code sequence $c_i[k]$ assigned to station $i$, code identification can use a normalized correlation
+\[
+R_i[m]=\frac{\sum_k r[k]c_i^*[k-m]}{\sqrt{\sum_k|r[k]|^2\sum_k|c_i[k]|^2}}.
+\]
+Useful code families have low cross-correlation and controlled sidelobes. In phase-coded FMCW the code is embedded in chirp phase, so delay and dechirp alter the code alignment. Correlation performance must therefore be evaluated after the actual dechirp/alignment chain, not just on isolated ideal code vectors.
+
+\section{Monte Carlo statistics}
+For $M$ trials with estimates $\hat\theta_m$ and truth $\theta$,
+\[
+\text{bias}=\frac{1}{M}\sum_m(\hat\theta_m-\theta),
+\]
+\[
+\sigma=\sqrt{\frac{1}{M-1}\sum_m(\hat\theta_m-\bar{\hat\theta})^2},
+\]
+\[
+\mathrm{RMSE}=\sqrt{\frac{1}{M}\sum_m(\hat\theta_m-\theta)^2}.
+\]
+Report all three when systematic errors are present. A low standard deviation can coexist with a large bias.
+
+\section{Confidence interval on estimated standard deviation}
+For Gaussian independent errors, uncertainty in a measured variance decreases slowly with trial count. A few dozen Monte Carlo runs are inadequate for credible ps-level tail/variance claims. Use at least thousands of trials for initial curves and increase for final figures, or compute confidence intervals based on chi-squared statistics.
+
+\section{Error propagation through two-way algebra}
+If directional delay estimates have independent variances $\sigma_{AB}^2$ and $\sigma_{BA}^2$, then ideal sum/difference estimates have
+\[
+\operatorname{var}(\hat\tau)=\operatorname{var}(\hat\theta)=\frac{\sigma_{AB}^2+\sigma_{BA}^2}{4}.
+\]
+If errors are correlated, covariance contributes with opposite signs:
+\[
+\operatorname{var}(\hat\tau)=\frac{\sigma_{AB}^2+\sigma_{BA}^2+2\operatorname{cov}}{4},
+\]
+\[
+\operatorname{var}(\hat\theta)=\frac{\sigma_{AB}^2+\sigma_{BA}^2-2\operatorname{cov}}{4}.
+\]
+This is why structured common errors can cancel in the clock-offset combination while reinforcing in the range combination, or vice versa.
+
+\section{Precision versus accuracy budget template}
+Represent the final result as
+\[
+\hat\theta=\theta+b_{cal}+b_{nr}+b_{model}+n_{est},
+\]
+where $b_{cal}$ is residual calibration bias, $b_{nr}$ is nonreciprocity/asymmetry bias, $b_{model}$ is estimator/model mismatch, and $n_{est}$ is stochastic estimator noise. A paper claiming 10-ps \emph{accuracy} must bound the bias terms, not merely show $\sigma(n_{est})<10$ ps.
+
+\section{Useful order-of-magnitude conversions}
+\begin{longtable}{p{0.27\textwidth}p{0.29\textwidth}p{0.36\textwidth}}
+\toprule Quantity & Equivalent & Interpretation \\ \midrule
+1 ps one-way time & 0.2998 mm path & tiny mechanical/electrical changes matter \\
+10 ps one-way time & 2.998 mm path & target discussed in meeting notes \\
+100 ps one-way time & 29.98 mm path & easier first hardware milestone \\
+1 degree at 77 GHz & about 36 fs phase-time & carrier phase is extraordinarily sensitive but ambiguous \\
+1 ppm clock-rate error over 1 ms & 1 ns time drift & even ppm-class skew matters over long exchange windows \\
+1 kHz beat error at $29.982$ MHz/us & 33.35 ps timing error & convenient estimator conversion \\
+\bottomrule
+\end{longtable}
+
+\end{document}

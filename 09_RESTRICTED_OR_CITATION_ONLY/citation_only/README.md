@@ -1,0 +1,50 @@
+# Citation-only / not physically included
+
+These sources remain part of the research map, but PDF bytes were not copied into this archive. Reasons include missing runtime bytes, paywall/repository restrictions, or unclear redistribution status.
+
+- **Linear FMCW Radar Techniques** (1992). DOI: `10.1049/ip-f-2.1992.0048`. Classic reference.
+- **Method for High Precision Clock Synchronization in Wireless Systems with Application to Radio Navigation** (2007). DOI: `10.1109/RWS.2007.351890`. Foundational clock synchronization; full copy not physically present in this runtime.
+- **Performance Analysis of Cooperative FMCW Radar Distance Measurement Systems** (2008). DOI: `10.1109/MWSYM.2008.4633118`. Phase-noise performance comparison; web-accessible metadata, PDF not copied.
+- **Precise Distance Measurement with Cooperative FMCW Radar Units** (2008). DOI: `10.1109/RWS.2008.4463606`. Core cooperative FMCW ranging paper.
+- **Precise Distance and Velocity Measurement for Real Time Locating in Multipath Environments Using a Frequency-Modulated Continuous-Wave Secondary Radar Approach** (2008). DOI: `10.1109/TMTT.2008.2003137`. Detailed range/velocity/multipath model.
+- **Accuracy Limits of a K-Band FMCW Radar with Phase Evaluation** (2012). CRLB and phase-evaluation precision precedent.
+- **The Effect of Phase Noise on Ranging Uncertainty in FMCW Secondary Radar-Based Local Positioning Systems** (2012). Directly relevant to secondary/cooperative FMCW PN.
+- **A 77-GHz Cooperative Radar System Based on Multi-Channel FMCW Stations for Local Positioning Applications** (2013). DOI: `10.1109/TMTT.2012.2227781`. Important bridge to 77-GHz hardware.
+- **FMCW Radar Transceiver Synchronization in a Multistatic Microwave Tomography System** (2023). Thesis-length synchronization treatment.
+- **Phase-Coded FMCW Automotive Radar: System Design and Interference Mitigation** (2020). DOI: `10.1109/TVT.2019.2953305`. Accepted manuscript known at TU Delft; not copied due repository download restriction.
+- **On the Synchronization of Uncoupled Multistatic PMCW Radars** (2024). DOI: `10.1109/TMTT.2024.3359035`. Digital carrier/timing recovery analog for future coded FMCW.
+- **Over-the-Air Synchronization for Coherent Digital Automotive Radar Networks** (2024). DOI: `10.1109/TRS.2024.3449333`. CFO/SFO/timing correction.
+- **Signal Model for Coherent Processing of Uncoupled and Low Frequency Coupled MIMO Radar Networks** (2024). DOI: `10.1109/JMW.2023.3334757`. Strong modern nonideal signal model.
+- **2014 Frischen Hasch Waldschmidt - Cooperative Radar: Uncorrelated Phase Noise** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2014 Rajan van der Veen - Joint Ranging and Synchronization for Anchorless Mobile Networks** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2015 Dwivedi - Joint Ranging and Clock Parameter Estimation via Two-Way RTT** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2015 ITU - Two-Way Satellite Time and Frequency Transfer** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2016 Lopez-Martinez et al. - Simulation of FMCW Radar with SDR** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2016 Scheiblhofer - In-Chirp FSK Communication Between Cooperative 77-GHz Radar Stations** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2017 TI - Complex Baseband Architecture in FMCW Radar Systems** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2018 Kazaz - Joint Ranging and Clock Synchronization for Dense IoT** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2018 Park et al. - Leakage Mitigation / Internal Delay Compensation in FMCW** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2018 Svensson - High Resolution Frequency Estimation for FMCW Radar (thesis)** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2019 Mueller Diewald - Cooperative Radar Signature Method for Unambiguity** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2019 Wang et al. - Range Accuracy of FMCW Radar with Source Nonlinearity** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2020 Infineon - Phase Coded FMCW Radar patent** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2020 UIUC - FMCW Radar lecture** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2020 Uysal Orru - Phase-Coded FMCW Automotive Radar: Application and Challenges** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2022 Architectures and Synchronization Techniques for Distributed Satellite Systems - Survey** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2022 Duerr - Coherent Multistatic MIMO Radar Network with Phase-Noise-Optimized Synthesis** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2022 MIT - Radar and Coherent Sensor Processing lecture** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2022 TI - Interference Mitigation for AWR/IWR Devices** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2023 Tagliaferri et al. - Cooperative Coherent Multistatic Imaging and Phase Synchronization** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2024 Ahmadi et al. - Distributed Massive MIMO FMCW Radar Simulator with Ray Tracing** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2024 Chen Niknejad - RF-Domain Leakage Cancellation for FMCW Radars** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2024 Huang et al. - Overview of Millimeter-Wave Radar Modeling Methods** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2024 Kou et al. - Distributed PMCW Radar Network Phase Noise** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2024 Multi-Objective Distributed Beamforming with High-Accuracy Synchronization** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2025 BIPM - Time Dissemination/TWSTFT lecture** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2025 DLR - Investigation of CW/LFM Waveforms for Bi/Multistatic Radar Synchronization** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2025 Eid - Novel Simulation Technique for UWB FMCW Radar** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2025 Han Meng Masouros - OTA Time/Frequency Synchronization for Distributed ISAC** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2025 Multistatic Radar Performance with Distributed Wireless Synchronization / BCRLB** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2025 Real-Time High-Accuracy Digital Wireless Time/Frequency/Phase Synchronization** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **2026 UCSB - Introduction to mmWave Radar Sensing Lab Notes** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.
+- **Merlo - Picosecond NLOS Wireless Time/Frequency Transfer presentation** (year n/a). Listed in prior acquisition staging; no separate PDF bytes available in this runtime.

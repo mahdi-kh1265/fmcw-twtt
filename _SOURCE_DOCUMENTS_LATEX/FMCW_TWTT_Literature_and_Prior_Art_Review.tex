@@ -1,0 +1,310 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.78in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,longtable,array,tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\definecolor{navy}{RGB}{25,54,93}
+\definecolor{slate}{RGB}{75,85,99}
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy,citecolor=navy,pdftitle={FMCW/TWTT Literature and Prior-Art Review}}
+\setlist{nosep,leftmargin=*}
+\setlist[description]{style=nextline}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.52em}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small FMCW / Two-Way Time Transfer Research Corpus}
+\rhead{\small FMCW/TWTT Literature and Prior-Art Review}
+\cfoot{\small Page \thepage\ of \pageref{LastPage}}
+\newcommand{\Saeed}{Saeed}
+\newcommand{\AWR}{AWR2944}
+\newcommand{\DCA}{DCA1000}
+\newcommand{\TWTT}{two-way time transfer}
+\newcommand{\FMCW}{FMCW}
+\newcommand{\codeword}[1]{\path{#1}}
+\newenvironment{keybox}{\begin{center}\begin{minipage}{0.94\textwidth}\hrule\vspace{0.45em}\textbf{Key point.} }{\vspace{0.45em}\hrule\end{minipage}\end{center}}
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{1.2in}
+{\Huge\bfseries\color{navy} FMCW/TWTT Literature and Prior-Art Review\par}
+\vspace{0.3in}
+{\Large From stretch processing to reciprocal clock transfer, coherent radar networks, and coded FMCW\par}
+\vspace{0.6in}
+{\large Summer 2026 - Saeed FMCW/TWTT Project\par}
+\vfill
+{\large Curated research synthesis and engineering reference\par}
+{\large Prepared 10 August 2026\par}
+\vspace{0.4in}
+\begin{minipage}{0.82\textwidth}
+\small
+This document is a project research aid, not a claim of novelty. It distinguishes source-supported prior art, engineering inference, and proposed simulation steps. Publisher/IEEE PDFs supplied by the user are retained in the archive for private research and are not represented as redistributable.
+\end{minipage}
+\end{titlepage}
+\tableofcontents
+\clearpage
+
+\section{Executive synthesis}
+The literature divides naturally into four eras. First, classical FMCW established stretch/dechirp processing: a delay of a wideband chirp becomes a low-frequency beat. Second, cooperative FMCW work in the 2000s recognized that the same mechanism can estimate relative time and frequency offsets between active radio units. Third, coherent double-sided methods combined reciprocal measurements from independent clocks to recover range, phase, and velocity with much stronger cancellation of synchronization impairments. Fourth, modern distributed radar and wireless synchronization research treats clock offset, skew, phase noise, waveform identity, and network topology as a joint estimation/calibration problem.
+
+Saeed's immediate MATLAB request sits between the first and second eras. The eventual two-AWR experiment sits between the second and third. The coded extension sits in the fourth. This distinction is useful because it keeps the first simulation simple without pretending the later precision problem is simple.
+
+\section{Classical FMCW: why dechirping is the enabling operation}
+For a linear chirp with start frequency $f_0$ and slope $S$, the instantaneous frequency is $f(t)=f_0+St$. A delayed copy has $f(t-\tau)=f_0+S(t-\tau)$. Mixing the two removes the common high carrier and leaves a difference approximately equal to $S\tau$. This is stretch processing: the receiver can estimate delay from a narrowband beat instead of sampling the entire RF waveform at its carrier frequency.
+
+The MathWorks and TI introductory material emphasize this processing chain because it is central to why automotive FMCW radar can use modest ADC bandwidth even while sweeping gigahertz of RF bandwidth. The later phase-coded literature repeatedly returns to the same point: any coding scheme that destroys the low-bandwidth stretch-processing advantage creates a serious receiver cost.
+
+\section{The 2007 cooperative-synchronization lineage}
+The 2007 Roehr/Vossiek/Gulden paper is a direct conceptual ancestor of the project. Instead of treating the second station as a passive reflector, it uses two active units. One unit emits a linear frequency-modulated signal; the other generates a local chirp with arbitrary time and frequency offset. Mixing the incoming and local chirps produces a low-pass signal whose frequency depends on both relative time offset $\Delta t$ and frequency offset $\Delta f$. By observing multiple sweep directions, the unknowns can be separated.
+
+This matters for our simulator in two ways. First, a ``clock error'' is not one scalar in a real two-radar system: epoch/time offset and rate/frequency offset are distinct. Second, using up and down slopes is not merely a range-Doppler trick; it can also create linearly independent equations for synchronization parameters.
+
+The paper reports a 5.8-GHz, 150-MHz-bandwidth prototype and sub-100-ps synchronization behavior in its architecture. Those numbers should be treated as a historical performance point, not transferred blindly to the AWR2944. The oscillator architecture, sweep duration, bandwidth, estimator, SNR, and hardware delays differ.
+
+\section{Cooperative FMCW ranging in the 2008-2013 literature}
+The follow-on cooperative FMCW work addresses what happens when the active units are not perfectly coherent. The 2008 ``Precise Distance Measurement with Cooperative FMCW Radar Units'' paper and the related performance-analysis paper compare evaluation concepts and emphasize phase-noise behavior in an incoherent cooperative system. The 2008 secondary-radar TMTT paper expands the treatment to velocity and multipath. The 2013 77-GHz cooperative system demonstrates that the ideas scale into an automotive-style millimeter-wave band.
+
+The immediate lesson is that a clean $f_b=S\tau$ plot is necessary but not sufficient. Two active radios introduce oscillator terms that monostatic homodyne FMCW partially cancels by construction. Cooperative links can lose that range-correlation advantage unless the two directions and/or references are processed intelligently.
+
+\section{CFDDS-TWR: the closest academic benchmark}
+Gottinger et al. 2019 is the most important direct benchmark in the archive. Two radio units possess separate clock sources, frequency generators, mixers, and ADCs. Both exchange FMCW chirp sequences in full duplex. Each unit mixes the partner's received signal with its own transmitted signal and records a beat. The two beat signals are then combined after one side's data is communicated to the other.
+
+The important conceptual leap is that the two directions are not merely averaged as two independent range estimates. Their phases and oscillator-error terms are structured. Joint processing can recover coherent range/Doppler information and can suppress noise-like products caused by uncorrelated phase noise. The paper reports a roughly 24-dB dynamic-range/noise improvement from its compensation in the demonstrated setup, along with sub-millimeter range standard deviation over its 24-GHz test distances.
+
+For our project, this paper should be treated as the benchmark that any claimed ``two-way FMCW'' contribution must surpass or differentiate from. The first MATLAB model need not reproduce the full paper. It should reproduce the ideal algebra that makes double-sided processing possible, then add independent clock terms in controlled stages.
+
+\section{Loosely coupled bistatic processing and radar networks}
+The 2021 loosely coupled bistatic work attacks another version of the same problem: separate oscillators destroy the phase-noise correlation enjoyed by a homodyne monostatic radar. Rather than distributing a high-quality RF reference, the proposed processing uses full-duplex measurements and only a relatively simple clock-rate relationship to restore coherent behavior in the processed data.
+
+The 2021 coherent automotive radar-network review places such methods in a broader taxonomy. Distributed radar can be unsynchronized, time/frequency synchronized but incoherent, partially coherent, or fully coherent. The practical benefits of moving upward in coherence include coherent integration, bistatic/multistatic Doppler, interferometric processing, larger effective apertures, and improved SNR/resolution. The cost is increasingly stringent calibration and synchronization.
+
+This taxonomy is useful for the AWR2944 experiment. We should not ask vaguely whether the two boards are ``synced.'' We should measure and label four different conditions: common reference frequency, chirp-start timing alignment, carrier-frequency/phase relationship within a chirp, and phase repeatability across chirps/frames.
+
+\section{Classical two-way time transfer versus FMCW two-way transfer}
+Two-way time/frequency transfer standards such as NIST/BIPM satellite methods provide the clean reciprocal-delay logic: if path delay is reciprocal, averaging the two directions cancels clock offset from propagation time while differencing isolates clock offset. Calibration is central because fixed transmit/receive delays are not guaranteed reciprocal.
+
+FMCW does not change the two-way algebra. It changes the measurement transducer. Instead of timestamping a pulse edge or correlation peak directly, each direction maps an effective time offset into an analog/digital beat. That beat can be estimated with narrow receiver bandwidth and high coherent processing gain.
+
+The dangerous oversimplification is to write $\delta_{AB}=\tau+\theta$ and $\delta_{BA}=\tau-\theta$ while silently hiding TX/RX group delay, sample-clock skew, chirp slope mismatch, and frequency offset. A serious model must expose those terms explicitly and show which cancel under reciprocity.
+
+\section{Modern picosecond wireless synchronization}
+The Nanzer-group work in the archive is not FMCW radar, but it is highly relevant to the desired precision regime. It demonstrates that picosecond-level synchronization can be approached with spectrally sparse two-tone waveforms and reciprocal time-transfer processing, including decentralized networks and dynamic connectivity. The important conceptual connection is bandwidth placement: delay precision depends strongly on effective/rms bandwidth and phase measurement, not simply on occupied contiguous bandwidth or ADC sample rate.
+
+This literature gives us a useful cross-check. If our future AWR2944 model predicts 10-ps timing at implausibly low SNR or with no calibration of asymmetry, it should be treated skeptically. Conversely, these modern systems show that picosecond precision is not categorically absurd when coherent phase information and reciprocal calibration are exploited.
+
+\section{Precision is an estimator problem, not an FFT-bin problem}
+Scherr et al. describes an FMCW beat as a spectral component whose frequency and phase carry range information. Their CZT-based algorithm refines a narrow frequency interval efficiently and adds phase evaluation. The key engineering point is that an FFT bin is a sampled display grid, not a fundamental lower bound on sinusoid-frequency estimation.
+
+For the AWR profile discussed in this project, a slope near $29.982\,\mathrm{MHz}/\mu\mathrm{s}$ maps 10 ps to roughly 300 Hz. A 25.6-us observation window has a raw FFT spacing near 39.1 kHz, so nearest-bin selection cannot resolve that shift. A maximum-likelihood/phase-slope/CZT estimator can estimate a tone between bins when SNR and model fidelity are sufficient. The achievable variance is then governed by SNR, observation time, phase noise, waveform distortion, and estimator efficiency.
+
+\section{Ramp nonlinearity}
+Ayhan et al. explicitly identifies three requirements for high FMCW range accuracy: high ramp linearity, low phase noise, and high SNR. A nonlinear instantaneous frequency means the dechirped signal is no longer a perfect constant-frequency tone. Systematic periodic deviations create sidebands/spurs; random deviations broaden or jitter the estimate. Their measurement strategy uses short-time/CZT analysis to characterize the ramp itself and then connects the deviations to IF/range error.
+
+For our simulator, chirp nonlinearity should therefore be a function added to phase or instantaneous frequency, not a single scalar ``linearity error.'' We should support deterministic polynomial curvature, sinusoidal spur-like deviations, and a measured error trace later.
+
+\section{Phase noise and range correlation}
+Homodyne monostatic FMCW has a valuable correlation property: the same oscillator appears at current time $t$ and delayed time $t-\tau$, so much of the low-frequency oscillator phase noise cancels in the phase difference. Herzel et al. models this explicitly as $\phi(t)-\phi(t-t_d)$ and examines PLL plus receiver-noise contributions to range error.
+
+A two-independent-radio link does not automatically enjoy that cancellation because the incoming chirp and local chirp are generated by different oscillators. This is why cooperative phase noise appears much more severely in early performance analyses and why CFDDS-style reciprocal processing is powerful.
+
+Tschapek et al. provides the most useful modern simulation guidance: do not replace oscillator phase noise by generic AWGN if precision is the objective. Measure/model the actual phase-noise PSD, synthesize colored phase noise, separate repeatable systematic phase distortion from stochastic phase noise, and run Monte Carlo radar estimation. Their phase model can be summarized as an ideal FMCW phase plus systematic polynomial phase terms plus stochastic $\phi_{PN}(t)$.
+
+\section{Coded FMCW: why it belongs later}
+Phase coding can provide transmitter identity, orthogonality, communications data, or interference suppression. But code symbols attached to a chirp are delayed by propagation, so the received code is not generally aligned with the local code during dechirp. Uysal's phase-coded FMCW work uses a group-delay processing strategy to realign/compensate the coding while preserving the advantages of stretch processing. Lampel extends the subject to system-level synchronization and RadCom. Kumbul's smoothed phase-coded FMCW further addresses practical waveform transitions and low-ADC-rate receiver operation.
+
+This is precisely why Saeed's ``code the FMCW'' idea is plausible but not a one-line phase multiplier in the final system. The simple code multiplication is fine for a conceptual V2 simulation. A serious V3 must model code-chip duration, delay-induced misalignment, decoding filter, and the effect on beat bandwidth/SNR.
+
+\section{AWR2944 mapping}
+The current TI datasheet/TRM material gives the hardware parameter space: 76--81 GHz operation, more than 4 GHz contiguous bandwidth, integrated chirp generation, four RX/four TX, external reference-clock support, and baseband ADC/IF limits. The exact two-board synchronization path is not guaranteed by these headline features. Sharing a reference clock can syntonize rates while leaving chirp start phase/timing and internal PLL phase unresolved.
+
+Therefore, the simulation should have separate knobs for reference-rate offset, carrier-frequency offset, chirp slope mismatch, epoch offset, trigger jitter, and random phase. The later hardware characterization can identify which knobs are actually small under a chosen wiring/setup.
+
+\section{Prior-art boundary for the eventual paper}
+The following claims are already substantially occupied by prior art and should not be used as standalone novelty statements:
+\begin{itemize}
+\item ``Use an FMCW chirp to convert delay into beat frequency.''
+\item ``Use two active FMCW units for distance measurement.''
+\item ``Use FMCW to synchronize time and frequency between wireless units.''
+\item ``Use double-sided full-duplex FMCW processing between separate clocks for coherent range/velocity.''
+\item ``Overlay phase coding on FMCW for communications/interference mitigation.''
+\end{itemize}
+
+The novelty search should instead be phrased around hardware constraints, estimators, calibration, coded multi-node operation, precision, or a new joint task. The final answer must come from experiments and a literature search targeted to the exact mechanism we develop.
+
+\section{Simulation implications extracted from the literature}
+\begin{longtable}{@{}p{0.27\textwidth}p{0.31\textwidth}p{0.35\textwidth}@{}}
+\toprule Literature lesson & Simulator consequence & Validation \\ \midrule
+Stretch processing lowers ADC burden & Simulate complex chirp phase and dechirped IF, not a brute-force 77-GHz sampled cosine & Compare $f_b$ with $S\tau$ \\
+Cooperative units have independent clocks & Separate local time maps and oscillators & Inject known $\theta,\epsilon,\Delta f$ \\
+Up/down slopes separate parameters & Support positive and negative $S$ & Recover injected time/frequency offsets \\
+FFT bins are not precision bounds & Implement phase-slope/CZT or sinusoid fit & Monte Carlo versus SNR and observation time \\
+PN is colored and range-dependent & PSD-based phase-noise generation & Compare with analytic range-correlation expectations \\
+Ramp errors are structured & deterministic + stochastic phase/frequency error functions & Recover ideal limit when disabled \\
+Two-way cancellation assumes reciprocity & independent TX/RX/group-delay terms per unit & inject asymmetry and verify bias \\
+Phase coding misaligns under delay & model code sequence in continuous/sampled time & decode after delay and filtering \\
+\bottomrule
+\end{longtable}
+
+\section{Research questions for the second phase}
+Once the first two-way MATLAB model works, the literature suggests a more interesting set of questions than ``can FMCW estimate a delay?''
+\begin{enumerate}
+\item What precision is predicted for a single AWR2944 chirp if the estimator uses both beat frequency and phase?
+\item How much precision improves with coherent multi-chirp integration before phase noise or chirp-to-chirp phase resets dominate?
+\item Which error terms cancel in reciprocal processing and which fixed delays survive as half-asymmetry bias?
+\item Can a shared 40-MHz reference remove enough rate/CFO error while leaving timing/phase estimation to the FMCW exchange?
+\item Can phase-coded node identity be added without sacrificing the low IF bandwidth that makes FMCW attractive?
+\item What calibration procedure is required to translate picosecond \emph{precision} into picosecond \emph{accuracy}?
+\end{enumerate}
+
+\section{Conclusions}
+The literature validates the central intuition behind Saeed's idea: FMCW is an elegant way to transduce very small timing differences into low-frequency beat observables. It also shows that the interesting research starts exactly where the simple explanation ends. Separate clocks, colored phase noise, ramp distortion, reciprocal path asymmetry, beat estimation, code alignment, and hardware calibration determine whether a nominal 10-ps target is meaningful.
+
+The best next step is thus a layered simulator with an exact ideal core and progressively enabled error terms. That design allows the first program-manager plots to be produced quickly while preserving a direct path to a publishable error-budget study.
+
+\clearpage
+\section{Annotated high-priority source list}
+\small
+\begin{longtable}{@{}p{0.07\textwidth}p{0.53\textwidth}p{0.16\textwidth}p{0.15\textwidth}@{}}
+\toprule Year & Source & Priority / Status & DOI \\ \midrule
+\endfirsthead
+\toprule Year & Source & Priority / Status & DOI \\ \midrule
+\endhead
+2007 & Method for High Precision Radar Distance Measurement and Synchronization of Wireless Units & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/MWSYM.2007.380436} \\
+2008 & A Versatile FMCW Radar System Simulator for Millimeter-Wave Applications & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/EUMC.2008.4751778} \\
+2015 & An Efficient Frequency and Phase Estimation Algorithm With CRB Performance for FMCW Radar Applications & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TIM.2014.2381354} \\
+2016 & Impact of Frequency Ramp Nonlinearity, Phase Noise, and SNR on FMCW Radar Accuracy & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TMTT.2016.2599165} \\
+2018 & Analysis of Ranging Precision in an FMCW Radar Measurement Using a Phase-Locked Loop & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TCSI.2017.2733041} \\
+2019 & Coherent Full-Duplex Double-Sided Two-Way Ranging and Velocity Measurement Between Separate Incoherent Radio Units & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TMTT.2019.2902553} \\
+2020 & System Level Synchronization of Phase-Coded FMCW Automotive Radars for RadCom & P1 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.23919/EuCAP48036.2020.9135417} \\
+2021 & Coherent Signal Processing for Loosely Coupled Bistatic Radar & P1 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TAES.2021.3050650} \\
+2021 & Coherent Automotive Radar Networks: The Next Generation of Radar-Based Imaging and Mapping & P1 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/JMW.2020.3034475} \\
+2022 & Detailed Analysis and Modeling of Phase Noise and Systematic Phase Distortions in FMCW Radar Systems & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/JMW.2022.3195574} \\
+2007 & Method for High Precision Clock Synchronization in Wireless Systems with Application to Radio Navigation & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/RWS.2007.351890} \\
+2008 & Precise Distance Measurement with Cooperative FMCW Radar Units & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/RWS.2008.4463606} \\
+2008 & Precise Distance and Velocity Measurement for Real Time Locating in Multipath Environments Using a Frequency-Modulated Continuous-Wave Secondary Radar Approach & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TMTT.2008.2003137} \\
+2008 & Performance Analysis of Cooperative FMCW Radar Distance Measurement Systems & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/MWSYM.2008.4633118} \\
+2013 & A 77-GHz Cooperative Radar System Based on Multi-Channel FMCW Stations for Local Positioning Applications & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TMTT.2012.2227781} \\
+2012 & Accuracy Limits of a K-Band FMCW Radar with Phase Evaluation & P0 / \nolinkurl{citation_only} &  \\
+2012 & The Effect of Phase Noise on Ranging Uncertainty in FMCW Secondary Radar-Based Local Positioning Systems & P0 / \nolinkurl{citation_only} &  \\
+1992 & Linear FMCW Radar Techniques & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1049/ip-f-2.1992.0048} \\
+2023 & FMCW Radar Transceiver Synchronization in a Multistatic Microwave Tomography System & P0 / \nolinkurl{citation_only} &  \\
+2020 & Phase-Coded FMCW Automotive Radar: System Design and Interference Mitigation & P1 / \nolinkurl{included_acquired_research_copy} & \nolinkurl{10.1109/TVT.2019.2953305} \\
+2024 & On the Synchronization of Uncoupled Multistatic PMCW Radars & P1 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TMTT.2024.3359035} \\
+2024 & Over-the-Air Synchronization for Coherent Digital Automotive Radar Networks & P1 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TRS.2024.3449333} \\
+2024 & Signal Model for Coherent Processing of Uncoupled and Low Frequency Coupled MIMO Radar Networks & P1 / \nolinkurl{citation_only} & \nolinkurl{10.1109/JMW.2023.3334757} \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+\clearpage
+\section{Detailed source-by-source technical notes}
+\subsection{Roehr, Vossiek, and Gulden (2007): synchronization as a two-parameter beat problem}
+The paper's most valuable modeling idea is that the beat produced by two nominally similar chirps contains a linear combination of \emph{time offset} and \emph{frequency offset}. In other words, a measured beat is not automatically a time-delay estimate in a two-oscillator system. Their use of up- and down-sweeps changes the sign of the slope-dependent timing term while leaving the frequency-offset contribution structurally different. This creates a solvable linear system.
+
+For our code, this means the first extension after ideal TWTT should be an explicit $\Delta f$ term and an opposite-slope experiment. A test should inject $(\Delta t,\Delta f)$ and prove both are recovered. If the code cannot pass that test, it is not ready for independent AWR units.
+
+\subsection{Scheiblhofer et al. (2008): simulator architecture}
+The paper's block schematic should be translated almost literally into software boundaries. A frequency trajectory is specified first, then integrated to phase; synthesizer dynamics and phase noise modify that phase; TX and LO signals are generated from possibly shared or independent noise processes; a scenario creates delays; the mixer produces IF; analog filters and ADC behavior produce the sampled data; DSP evaluates it.
+
+Two subtleties are especially relevant. First, their simulation clock can be higher than the final ADC rate so that noise and out-of-band components that later alias are represented before decimation. Second, they distinguish coherent and incoherent TX/LO phase-noise realizations. We need the same switch because a monostatic AWR channel and a cross-link between independent boards have very different phase-noise correlation.
+
+\subsection{Scherr et al. (2015): coarse frequency plus fine phase}
+The source explicitly gives the FMCW relationships $f_b=(B/T)\tau$ and $\phi_b\propto f_{start}\tau$, then uses frequency to identify an unambiguous coarse range segment and phase to refine position inside that segment. The conceptual value for TWTT is larger than the exact CZT implementation: frequency and phase are complementary observables. A very small timing difference may be hard to see as a raw frequency-bin shift but extremely visible as phase when ambiguity is already controlled.
+
+A future estimator should therefore expose both $\hat f_b$ and $\hat\phi_b$. Even if the first Saeed plot uses frequency only, saving complex phase now prevents an unnecessary redesign later.
+
+\subsection{Ayhan et al. (2016): nonlinearity is a waveform error, not post-hoc range noise}
+Their analysis shows that deterministic and random frequency-ramp deviations transform into characteristic IF distortions. This is a warning against a common simulation shortcut: adding a random ``range error'' after the FFT. Doing so cannot reproduce spectral broadening, spurs, estimator-dependent bias, or phase distortion.
+
+Our impairment API should therefore accept an instantaneous-frequency error $e_f(t)$ or phase-error function and regenerate the waveform. Timing error then emerges from the same estimator used on clean data.
+
+\subsection{Herzel et al. (2018): the same oscillator can cancel itself}
+The paper's phase-noise difference $\phi(t)-\phi(t-t_d)$ is the mathematical statement of range correlation. When the same oscillator generates TX and LO, nearby-in-time phase fluctuations appear in both terms and partially cancel. This is why monostatic homodyne FMCW can be much less sensitive to phase noise than an incoherent cross-link.
+
+The simulator must therefore avoid a single global ``phaseNoise=true'' option. It needs a correlation topology: common realization, partially correlated realization, or independent realizations. Without this, a two-board precision prediction can be wrong by orders of magnitude.
+
+\subsection{Gottinger et al. (2019): double-sided beats are jointly useful}
+The CFDDS-TWR architecture is crucial because it uses the two locally generated beat signals together. The full-duplex exchange means each station's oscillator appears in structured combinations across the two records. Joint processing recovers coherent observables that one side alone cannot provide and can suppress products of uncorrelated phase noise.
+
+For our project, the exact algorithm can be deferred. What cannot be deferred is data architecture: when hardware arrives, preserve complex raw/beat records from \emph{both} sides with a reproducible association between chirps. Throwing away one side or only saving final range estimates would prevent CFDDS-like post-processing.
+
+\subsection{Tschapek et al. (2022): a digital twin requires measured distortion statistics}
+Tschapek's three-step workflow is almost a roadmap for the later project: characterize phase distortions, synthesize virtual signals carrying the same statistics, then run the radar estimator and compare measurement metrics. Their explicit separation between stochastic colored phase noise and repeatable systematic phase error is particularly important for calibration.
+
+When real AWR data becomes available, one useful experiment is a stable cabled/known-delay setup from which residual beat phase can be measured across chirps. Repeatable structure becomes a candidate deterministic calibration term; nonrepeatable residual statistics inform the stochastic phase-noise model.
+
+\subsection{NIST/BIPM two-way transfer: precision is not calibration}
+Classical two-way transfer literature treats calibration as a first-class problem because transmit and receive equipment delays do not necessarily cancel. This is the conceptual antidote to assuming that reciprocal wireless exchange automatically yields absolute clock accuracy. For a 10-ps goal, millimeter-scale electrical path changes, connector repeatability, temperature drift, and channel/group delay become numerically important.
+
+The eventual report should always state both \emph{precision} (repeatability/standard deviation) and \emph{accuracy/bias after calibration}. A system can have excellent precision and poor absolute accuracy.
+
+\subsection{Modern picosecond synchronization: sparse spectral leverage}
+The modern two-tone time-transfer work demonstrates that large effective frequency separation can create strong timing/phase sensitivity without filling the entire spectrum. It is not an FMCW implementation, but it supplies a useful Fisher-information intuition: timing precision is tied to how strongly phase changes with delay across the waveform's frequency content.
+
+That perspective suggests a later comparison worth simulating: for the same RF span and SNR, compare a chirp-based estimator with a sparse two-tone estimator under the AWR-compatible constraints. Even a negative result would clarify why FMCW is attractive here (hardware integration, simultaneous radar function, dechirp architecture) rather than because it is universally optimal for time transfer.
+
+\section{Prior-art chronology}
+\begin{longtable}{p{0.09\textwidth}p{0.31\textwidth}p{0.52\textwidth}}
+\toprule Era & Representative work & What it adds to our mental model \\ \midrule
+1990s & Linear FMCW / range-correlation foundations & Standard chirp/dechirp equations and oscillator-noise intuition. \\
+2007 & Roehr/Gulden/Vossiek & Active-unit synchronization: time offset and frequency offset inferred from FMCW beat measurements. \\
+2008 & cooperative FMCW ranging/performance papers & Precision and phase-noise limits when two units are not inherently coherent; multipath and alternate estimators. \\
+2013 & 77-GHz cooperative hardware & Demonstrates that cooperative FMCW is not limited to low-GHz laboratory radios. \\
+2014--2016 & timing patents / high-accuracy estimator work & Explicit clock synchronization with FMCW; phase/frequency refinement; phase-coded data channels. \\
+2019 & CFDDS-TWR & Full-duplex double-sided coherent processing between separate low-cost clock sources. \\
+2020--2022 & phase-coded FMCW / coherent radar networks & Node/waveform separation, RadCom, coherent distributed sensing, calibration taxonomy. \\
+2022--2025 & wireless picosecond synchronization & Shows modern two-way phase/time transfer can reach the few-ps precision regime under carefully designed waveforms/calibration. \\
+2026 project & AWR2944 FMCW/TWTT & Opportunity is implementation + estimator/calibration/coding under specific commodity 77-GHz hardware constraints, not invention of FMCW TWTT itself. \\
+\bottomrule
+\end{longtable}
+
+\section{Comparison of measurement observables}
+\begin{longtable}{@{}p{0.18\textwidth}p{0.22\textwidth}p{0.24\textwidth}p{0.25\textwidth}@{}}
+\toprule Observable & Strength & Weakness & Project use \\ \midrule
+FFT peak / beat frequency & absolute/coarse, intuitive, robust & short-window grid is coarse; CFO/slope errors bias it & first plots, coarse acquisition \\
+Refined sinusoid frequency & sub-bin precision, model-based & sensitive to distortion/model mismatch & main timing estimator candidate \\
+Beat phase & extreme local delay sensitivity & $2\pi$ ambiguity; requires phase coherence/calibration & fine correction and precision study \\
+Up/down beat pair & separates slope-dependent delay from CFO/Doppler-like terms & doubles waveform/processing requirements & independent clock-frequency offset \\
+Two-way reciprocal pair & separates reciprocal propagation and clock epoch offset & biased by asymmetry and nonreciprocal motion/channel & core TWTT operation \\
+Code correlation & node identity, interference rejection, processing gain & code-delay alignment can increase bandwidth/complexity & multi-radar extension \\
+\bottomrule
+\end{longtable}
+
+\section{Error taxonomy for the eventual paper}
+A useful literature-derived error taxonomy is:
+\begin{enumerate}
+\item \textbf{Waveform-generation errors:} slope mismatch, ramp curvature, PLL transient, spurs, colored phase noise.
+\item \textbf{Clock errors:} epoch offset, frequency/rate offset, sample-clock offset, jitter/wander.
+\item \textbf{RF/analog errors:} TX/RX group delay, filter dispersion, leakage, DC offset, gain compression, antenna/cable delay.
+\item \textbf{Propagation errors:} multipath, movement/Doppler, path asymmetry, angular geometry.
+\item \textbf{Sampling errors:} finite observation, quantization, clipping, packet loss or timing uncertainty in capture infrastructure.
+\item \textbf{Estimator errors:} binning, window bias, phase unwrap, wrong model order, code misalignment.
+\item \textbf{Calibration errors:} residual fixed bias, temperature drift, channel-to-channel differences, reset-to-reset phase changes.
+\end{enumerate}
+A strong experimental paper should identify which category dominates each operating regime rather than reporting only a final RMS number.
+
+\section{How to evaluate a 10-ps claim}
+A 10-ps figure can mean several distinct things. Before comparing papers or experiments, ask:
+\begin{itemize}
+\item Is it single-shot or averaged?
+\item Is it standard deviation, RMS error, peak-to-peak jitter, or absolute calibrated bias?
+\item Over what integration time and measurement bandwidth?
+\item At what SNR and distance?
+\item Are the two units frequency-syntonized or completely independent?
+\item Is the path cabled, free-space LOS, multipath, or dynamic?
+\item Is the phase ambiguity already resolved by another observable?
+\item Does the result survive power cycling and temperature change?
+\end{itemize}
+This checklist will keep the project from comparing unlike metrics.
+
+\end{document}

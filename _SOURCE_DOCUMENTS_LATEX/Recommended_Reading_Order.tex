@@ -1,0 +1,108 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.78in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,longtable,array,tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\definecolor{navy}{RGB}{25,54,93}
+\definecolor{slate}{RGB}{75,85,99}
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy,citecolor=navy,pdftitle={Recommended Reading Order}}
+\setlist{nosep,leftmargin=*}
+\setlist[description]{style=nextline}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.52em}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small FMCW / Two-Way Time Transfer Research Corpus}
+\rhead{\small Recommended Reading Order}
+\cfoot{\small Page \thepage\ of \pageref{LastPage}}
+\newcommand{\Saeed}{Saeed}
+\newcommand{\AWR}{AWR2944}
+\newcommand{\DCA}{DCA1000}
+\newcommand{\TWTT}{two-way time transfer}
+\newcommand{\FMCW}{FMCW}
+\newcommand{\codeword}[1]{\path{#1}}
+\newenvironment{keybox}{\begin{center}\begin{minipage}{0.94\textwidth}\hrule\vspace{0.45em}\textbf{Key point.} }{\vspace{0.45em}\hrule\end{minipage}\end{center}}
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{1.2in}
+{\Huge\bfseries\color{navy} Recommended Reading Order\par}
+\vspace{0.3in}
+{\Large A time-efficient sequence for understanding, implementing, and then extending the FMCW/TWTT system\par}
+\vspace{0.6in}
+{\large Summer 2026 - Saeed FMCW/TWTT Project\par}
+\vfill
+{\large Curated research synthesis and engineering reference\par}
+{\large Prepared 10 August 2026\par}
+\vspace{0.4in}
+\begin{minipage}{0.82\textwidth}
+\small
+This document is a project research aid, not a claim of novelty. It distinguishes source-supported prior art, engineering inference, and proposed simulation steps. Publisher/IEEE PDFs supplied by the user are retained in the archive for private research and are not represented as redistributable.
+\end{minipage}
+\end{titlepage}
+\tableofcontents
+\clearpage
+
+\section{If you have 30 minutes}
+\begin{enumerate}
+\item Read the Saeed meeting notes once, focusing only on the requested progression: ordinary FMCW MATLAB plots first, second radar later, coding after that.
+\item Read the first two pages of the 2007 Roehr synchronization paper. Look at the two active stations and how mixing produces equations in time/frequency offset.
+\item Read the abstract, Fig. 1, and introduction of the 2019 CFDDS-TWR paper. This shows the mature two-direction version of the idea.
+\item Read the first two pages of the Scheiblhofer simulator paper. The block structure is the template for our eventual simulator.
+\end{enumerate}
+
+\section{If you have two hours}
+Add Scherr 2015 through the FMCW equations/CZT motivation; Ayhan 2016 through the ramp-linearity setup; and the TI chirp programming note. At the end of this session you should be able to derive $f_b=S\tau$, explain why a raw FFT bin is not a precision bound, and map $S,B,T_c,F_s,N$ to radar configuration fields.
+
+\section{Before writing MATLAB}
+Read these in order:
+\begin{enumerate}
+\item Scheiblhofer 2008 simulator - sections on sweep generation, phase integration, mixer/baseband, and noise.
+\item Roehr 2007 - synchronization equations using opposite slopes.
+\item Scherr 2015 - frequency plus phase evaluation.
+\item The Mathematical Handbook in this archive.
+\item The MATLAB Simulation Blueprint in this archive.
+\end{enumerate}
+Then implement only V0/V1.
+
+\section{Before adding nonidealities}
+\begin{enumerate}
+\item Ayhan 2016: ramp nonlinearity, PN, SNR.
+\item Herzel 2018: PLL PN and range correlation.
+\item Tschapek 2022: colored phase noise and systematic phase errors.
+\item Gottinger 2019: how reciprocal processing handles independent oscillators.
+\end{enumerate}
+
+\section{Before touching two physical radars}
+Read the AWR2944 datasheet, relevant TRM clock/chirp chapters, EVM guide, TI chirp programming report, calibration note, and DCA1000 capture guide. Make a hardware checklist that distinguishes shared reference frequency from chirp-trigger alignment and RF phase coherence.
+
+\section{Before adding phase coding}
+Read Lampel 2020, Uysal 2020, and Kumbul 2022. The question is not only ``what code do we use?'' but ``how do we preserve FMCW's stretch-processing/low-ADC advantage after the code is delayed and misaligned?''
+
+\section{Before discussing novelty}
+Read the full 2007 cooperative papers, 2008/2013 cooperative FMCW lineage, 2019 CFDDS-TWR, 2021 loosely coupled bistatic/coherent radar-network work, Honeywell timing/coded FMCW patents, and modern picosecond wireless time-transfer papers. Then formulate a one-sentence claim that contains the exact new mechanism, hardware constraint, estimator, calibration technique, or coded network capability. If the sentence is simply ``FMCW two-way time transfer,'' it is not specific enough.
+
+\section{Suggested personal notes template}
+For every important paper, capture six lines:
+\begin{enumerate}
+\item Problem they solve.
+\item Exact waveform/architecture.
+\item Unknown parameters estimated.
+\item Key equations/estimator.
+\item Best demonstrated precision/accuracy and conditions.
+\item One limitation or gap that matters to AWR2944/TWTT.
+\end{enumerate}
+This is a better novelty map than a pile of highlights.
+
+\end{document}

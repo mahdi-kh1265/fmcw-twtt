@@ -1,0 +1,150 @@
+FMCW_TWTT_Research_Corpus/
+├── 00_START_HERE/
+│   ├── ACQUISITION_AND_PACKAGING_STATUS.md
+│   ├── ARCHIVE_STATUS_2026-08-10.md
+│   ├── AWR2944_FMCW_TWTT_MATLAB_Simulation_Blueprint.pdf
+│   ├── bibliography.csv
+│   ├── CITATION_ONLY_WISHLIST.csv
+│   ├── FMCW_TWTT_Annotated_Source_Atlas.pdf
+│   ├── FMCW_TWTT_Literature_and_Prior_Art_Review.pdf
+│   ├── FULL_FILE_MANIFEST.csv
+│   ├── MASTER_INDEX.pdf
+│   ├── PACKAGE_MANIFEST.csv
+│   ├── README.md
+│   ├── recommended_reading_order.pdf
+│   ├── repository_tree.txt
+│   └── SOURCE_FILE_MANIFEST.csv
+├── 01_FMCW_FUNDAMENTALS/
+│   ├── classic_and_signal_processing/
+│   │   ├── 2017_TI_Complex_Baseband_Architecture_in_FMCW_Radar_Systems.pdf
+│   │   └── 2022_TI_Interference_Mitigation_for_AWR_IWR_Devices.pdf
+│   ├── TI_and_intro/
+│   │   ├── TI_Fundamentals_of_mmWave_Radar_Sensors.pdf
+│   │   └── TI_Getting_Started_with_mmWave_Sensors_2025.pdf
+│   └── README.md
+├── 02_MATLAB_AND_SIMULATION/
+│   ├── additional_acquired/
+│   │   ├── 2016_Lopez_Martinez_Vidal_Morera_Simulation_FMCW_Radar_SDR.pdf
+│   │   ├── 2019_MathWorks_Automotive_Radar_Development_MATLAB.pdf
+│   │   ├── 2020_UIUC_FMCW_Radar_Lecture.pdf
+│   │   ├── 2022_MIT_Radar_and_Coherent_Sensor_Processing_Lecture.pdf
+│   │   ├── 2024_Ahmadi_et_al_Distributed_Massive_MIMO_FMCW_Radar_Simulator_Ray_Tracing.pdf
+│   │   ├── 2024_Huang_et_al_Overview_Millimeter_Wave_Radar_Modeling_Methods.pdf
+│   │   ├── 2025_Eid_Novel_Simulation_Technique_UWB_FMCW_Radar.pdf
+│   │   ├── 2026_UCSB_Introduction_to_mmWave_Radar_Sensing_Lab_Notes.pdf
+│   │   └── README.md
+│   ├── implementation_notes/
+│   ├── MathWorks/
+│   │   ├── MathWorks_Design_of_FMCW_Radars_for_Active_Safety_Applications.pdf
+│   │   └── MathWorks_Radar_System_Design_Using_MATLAB_Simulink_2016.pdf
+│   ├── system_simulator_references/
+│   │   └── README_RESTRICTED_CROSSREFS.md
+│   └── README.md
+├── 03_TWO_WAY_TIME_TRANSFER_AND_SYNC/
+│   ├── additional_acquired/
+│   │   ├── 2014_Rajan_van_der_Veen_Joint_Ranging_Synchronization_Anchorless_Mobile_Network.pdf
+│   │   ├── 2015_Dwivedi_Joint_Ranging_Clock_Parameter_Estimation_Two_Way_RTT.pdf
+│   │   ├── 2015_ITU_TF1153_Two_Way_Satellite_Time_Frequency_Transfer.pdf
+│   │   ├── 2018_Kazaz_Joint_Ranging_Clock_Synchronization_Dense_IoT.pdf
+│   │   ├── 2022_Architectures_and_Synchronization_Techniques_Distributed_Satellite_Systems_Survey.pdf
+│   │   ├── 2022_Merlo_Mghabghab_Nanzer_Wireless_Picosecond_Time_Synchronization.pdf
+│   │   ├── 2023_Tagliaferri_et_al_Cooperative_Coherent_Multistatic_Imaging_Phase_Synchronization.pdf
+│   │   ├── 2024_Multi_Objective_Distributed_Beamforming_High_Accuracy_Sync.pdf
+│   │   ├── 2025_BIPM_Time_Dissemination_TWSTFT_Lecture.pdf
+│   │   ├── 2025_DLR_Investigation_CW_LFM_Waveforms_Bi_Multistatic_Radar_Synchronization.pdf
+│   │   ├── 2025_Han_Meng_Masouros_OTA_Time_Frequency_Synchronization_Distributed_ISAC.pdf
+│   │   ├── 2025_Multistatic_Radar_Performance_Distributed_Wireless_Synchronization_BCRLB.pdf
+│   │   ├── 2025_Real_Time_High_Accuracy_Digital_Wireless_Time_Frequency_Phase_Synchronization.pdf
+│   │   ├── Merlo_Picosecond_NLOS_Wireless_Time_Frequency_Transfer_Presentation.pdf
+│   │   └── README.md
+│   ├── foundations_and_standards/
+│   │   ├── BIPM_TWSTFT_Calibration_Guidelines_2016.pdf
+│   │   ├── NIST_Fundamentals_of_Two_Way_Time_Transfers_by_Satellite.pdf
+│   │   └── README_RESTRICTED_CROSSREFS.md
+│   ├── patents/
+│   │   └── Honeywell_EP2985625A1_FMCW_Radar_with_Timing_Synchronization.pdf
+│   ├── picosecond_wireless_sync/
+│   │   ├── 2022_Merlo_Mghabghab_Nanzer_Wireless_Picosecond_Time_Synchronization.pdf
+│   │   ├── 2023_Merlo_High_Accuracy_Wireless_Time_Frequency_Transfer_Distributed_Beamforming.pdf
+│   │   ├── 2024_Decentralized_Picosecond_Synchronization_Distributed_Wireless_Systems.pdf
+│   │   └── 2024_Shandi_Merlo_Nanzer_Wireless_Picosecond_Time_Synchronization_Dynamic_Connectivity.pdf
+│   └── README.md
+├── 04_CODED_FMCW_AND_MULTIRADAR/
+│   ├── additional_acquired/
+│   │   ├── 2014_Frischen_Hasch_Waldschmidt_Cooperative_Radar_Uncorrelated_Phase_Noise.pdf
+│   │   ├── 2016_Scheiblhofer_In_Chirp_FSK_Communication_Cooperative_77GHz_Radar.pdf
+│   │   ├── 2019_Mueller_Diewald_Cooperative_Radar_Signature_Unambiguity.pdf
+│   │   ├── 2020_Infineon_US20200132825A1_Phase_Coded_FMCW_Radar.pdf
+│   │   ├── 2020_Uysal_Orru_Phase_Coded_FMCW_Application_and_Challenges.pdf
+│   │   ├── 2020_Uysal_Phase_Coded_FMCW_System_Design_Interference_Mitigation.pdf
+│   │   ├── 2022_Duerr_Coherent_Multistatic_MIMO_Radar_Network_Phase_Noise_Optimized_Synthesis.pdf
+│   │   ├── 2024_Kou_Bauduin_Bourdoux_Pollin_Distributed_PMCW_Radar_Network_Phase_Noise.pdf
+│   │   └── README.md
+│   ├── orthogonal_waveforms_and_networks/
+│   │   └── README_RESTRICTED_CROSSREFS.md
+│   ├── phase_coded_FMCW/
+│   │   ├── 2022_Kumbul_Smoothed_Phase_Coded_FMCW.pdf
+│   │   ├── Honeywell_US20160047892A1_FMCW_Radar_Phase_Encoded_Data_Channel.pdf
+│   │   └── README_RESTRICTED_CROSSREFS.md
+│   └── README.md
+├── 05_PRECISION_LIMITS_AND_NONIDEALITIES/
+│   ├── additional_acquired/
+│   │   ├── 2018_Park_Park_Park_Leakage_Mitigation_Internal_Delay_Compensation_FMCW.pdf
+│   │   ├── 2018_Svensson_High_Resolution_Frequency_Estimation_FMCW_Radar_Thesis.pdf
+│   │   ├── 2019_Wang_et_al_Range_Accuracy_FMCW_Source_Nonlinearity.pdf
+│   │   ├── 2024_Chen_Niknejad_RF_Domain_Leakage_Cancellation_FMCW_Radars.pdf
+│   │   └── README.md
+│   ├── chirp_nonlinearity/
+│   │   └── README_RESTRICTED_CROSSREFS.md
+│   ├── frequency_phase_estimation_and_CRLB/
+│   │   └── README_RESTRICTED_CROSSREFS.md
+│   ├── phase_noise_and_PLL/
+│   │   └── README_RESTRICTED_CROSSREFS.md
+│   └── README.md
+├── 06_TI_AWR2944_IMPLEMENTATION/
+│   ├── AWR2944/
+│   │   ├── TI_AWR2943_AWR2944_Datasheet_RevE_2026.pdf
+│   │   ├── TI_AWR2944_AWR2944P_EVM_User_Guide_RevC.pdf
+│   │   ├── TI_AWR294x_Device_Errata_RevC.pdf
+│   │   └── TI_AWR294x_Technical_Reference_Manual_RevD.pdf
+│   ├── chirp_config_calibration_and_MIMO/
+│   │   ├── TI_Cascade_Coherency_Phase_Shifter_Calibration.pdf
+│   │   ├── TI_MIMO_Radar.pdf
+│   │   ├── TI_Programming_Chirp_Parameters.pdf
+│   │   └── TI_Self_Calibration_mmWave_Radar_Devices.pdf
+│   ├── DCA1000_and_capture/
+│   │   └── TI_mmWave_Sensor_Raw_Data_Capture_DCA1000_mmWave_Studio.pdf
+│   └── README.md
+├── 07_PROJECT_CONTEXT/
+│   ├── 2026-08-07_Saeed_Meeting_Notes.pdf
+│   ├── PREPACK_acquisition_status_2026-08-10.md
+│   └── README.md
+├── 08_EQUATION_HANDBOOK/
+│   └── FMCW_TWTT_Mathematical_Handbook.pdf
+├── 09_RESTRICTED_OR_CITATION_ONLY/
+│   ├── citation_only/
+│   │   └── README.md
+│   ├── user_supplied_restricted/
+│   │   ├── 2007_Roehr_High_Precision_Radar_Distance_Synchronization.pdf
+│   │   ├── 2008_Scheiblhofer_A_Versatile_FMCW_Radar_System_Simulator.pdf
+│   │   ├── 2013_Pfeffer_FMCW_MIMO_Frequency_Division_TX_Beamforming.pdf
+│   │   ├── 2015_Scherr_Efficient_Frequency_and_Phase_Estimation_CRB.pdf
+│   │   ├── 2016_Ayhan_Ramp_Nonlinearity_Phase_Noise_SNR.pdf
+│   │   ├── 2018_Herzel_Ranging_Precision_FMCW_PLL.pdf
+│   │   ├── 2019_Gottinger_CFDDS_TWR.pdf
+│   │   ├── 2020_Lampel_System_Level_Synchronization_Phase_Coded_FMCW_RadCom.pdf
+│   │   ├── 2021_Gottinger_Coherent_Automotive_Radar_Networks.pdf
+│   │   ├── 2021_Gottinger_Loosely_Coupled_Bistatic_Radar.pdf
+│   │   └── 2022_Tschapek_Detailed_Phase_Noise_Systematic_Distortions.pdf
+│   └── README.md
+├── 10_SIMULATION_WORKSPACE/
+│   ├── README.md
+│   └── README_NEXT_STEP.md
+├── _SOURCE_DOCUMENTS_LATEX/
+│   ├── AWR2944_FMCW_TWTT_MATLAB_Simulation_Blueprint.tex
+│   ├── FMCW_TWTT_Annotated_Source_Atlas.tex
+│   ├── FMCW_TWTT_Literature_and_Prior_Art_Review.tex
+│   ├── FMCW_TWTT_Mathematical_Handbook.tex
+│   ├── MASTER_INDEX.tex
+│   └── Recommended_Reading_Order.tex
+└── README.md

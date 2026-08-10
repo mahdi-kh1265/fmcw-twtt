@@ -1,0 +1,20 @@
+# 03 TWO WAY TIME TRANSFER AND SYNC - additional acquired research copies
+
+These PDFs were acquired during the literature sweep for private project research. Inclusion here does not imply permission for public redistribution; consult the source/publication license before sharing outside the project.
+
+## Files
+
+- `2014_Rajan_van_der_Veen_Joint_Ranging_Synchronization_Anchorless_Mobile_Network.pdf`
+- `2015_Dwivedi_Joint_Ranging_Clock_Parameter_Estimation_Two_Way_RTT.pdf`
+- `2015_ITU_TF1153_Two_Way_Satellite_Time_Frequency_Transfer.pdf`
+- `2018_Kazaz_Joint_Ranging_Clock_Synchronization_Dense_IoT.pdf`
+- `2022_Architectures_and_Synchronization_Techniques_Distributed_Satellite_Systems_Survey.pdf`
+- `2022_Merlo_Mghabghab_Nanzer_Wireless_Picosecond_Time_Synchronization.pdf`
+- `2023_Tagliaferri_et_al_Cooperative_Coherent_Multistatic_Imaging_Phase_Synchronization.pdf`
+- `2024_Multi_Objective_Distributed_Beamforming_High_Accuracy_Sync.pdf`
+- `2025_BIPM_Time_Dissemination_TWSTFT_Lecture.pdf`
+- `2025_DLR_Investigation_CW_LFM_Waveforms_Bi_Multistatic_Radar_Synchronization.pdf`
+- `2025_Han_Meng_Masouros_OTA_Time_Frequency_Synchronization_Distributed_ISAC.pdf`
+- `2025_Multistatic_Radar_Performance_Distributed_Wireless_Synchronization_BCRLB.pdf`
+- `2025_Real_Time_High_Accuracy_Digital_Wireless_Time_Frequency_Phase_Synchronization.pdf`
+- `Merlo_Picosecond_NLOS_Wireless_Time_Frequency_Transfer_Presentation.pdf`

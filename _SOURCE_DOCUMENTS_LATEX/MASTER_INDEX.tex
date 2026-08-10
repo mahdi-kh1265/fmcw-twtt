@@ -1,0 +1,508 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.78in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,longtable,array,tabularx}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\definecolor{navy}{RGB}{25,54,93}
+\definecolor{slate}{RGB}{75,85,99}
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy,citecolor=navy,pdftitle={MASTER INDEX}}
+\setlist{nosep,leftmargin=*}
+\setlist[description]{style=nextline}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.52em}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small FMCW / Two-Way Time Transfer Research Corpus}
+\rhead{\small MASTER INDEX}
+\cfoot{\small Page \thepage\ of \pageref{LastPage}}
+\newcommand{\Saeed}{Saeed}
+\newcommand{\AWR}{AWR2944}
+\newcommand{\DCA}{DCA1000}
+\newcommand{\TWTT}{two-way time transfer}
+\newcommand{\FMCW}{FMCW}
+\newcommand{\codeword}[1]{\path{#1}}
+\newenvironment{keybox}{\begin{center}\begin{minipage}{0.94\textwidth}\hrule\vspace{0.45em}\textbf{Key point.} }{\vspace{0.45em}\hrule\end{minipage}\end{center}}
+\begin{document}
+\begin{titlepage}
+\centering
+\vspace*{1.2in}
+{\Huge\bfseries\color{navy} MASTER INDEX\par}
+\vspace{0.3in}
+{\Large How to use the corpus, what matters first, and how the sources map onto the engineering plan\par}
+\vspace{0.6in}
+{\large Summer 2026 - Saeed FMCW/TWTT Project\par}
+\vfill
+{\large Curated research synthesis and engineering reference\par}
+{\large Prepared 10 August 2026\par}
+\vspace{0.4in}
+\begin{minipage}{0.82\textwidth}
+\small
+This document is a project research aid, not a claim of novelty. It distinguishes source-supported prior art, engineering inference, and proposed simulation steps. Publisher/IEEE PDFs supplied by the user are retained in the archive for private research and are not represented as redistributable.
+\end{minipage}
+\end{titlepage}
+\tableofcontents
+\clearpage
+
+\section{Purpose of this corpus}
+This archive exists to support a very specific progression: understand FMCW deeply enough to build a trustworthy MATLAB truth model; extend that model to reciprocal two-way timing; map it onto two AWR2944-class units; then investigate the nonidealities and coding strategies that determine whether picosecond-class synchronization is physically credible.
+
+The 7 August meeting notes make the near-term deliverable unusually clear: first produce one or two MATLAB FMCW plots suitable for a program manager, initially under a fully synchronized-frequency assumption; only after the ordinary FMCW model works should phase-coded/coded FMCW be added. The notes also explicitly recognize that the baseline FMCW timing idea has prior art and that additional features will be needed for novelty.
+
+\begin{keybox}
+The correct immediate target is therefore \emph{not} a giant automotive radar simulator and not a coded-radar paper reproduction. It is a small, analytically checkable complex-baseband model whose delay and clock-offset estimates can be proven against closed-form equations. Everything else in this archive exists to prevent that small model from becoming a dead-end toy.
+\end{keybox}
+
+\section{Repository map}
+\begin{longtable}{p{0.27\textwidth}p{0.67\textwidth}}
+\toprule Folder & Role \\ \midrule
+\codeword{00_START_HERE} & Master index, bibliography, source/file manifest, and reading order. \\
+\codeword{01_FMCW_FUNDAMENTALS} & Chirp, dechirp/stretch processing, range/Doppler conventions, and introductory TI material. \\
+\codeword{02_MATLAB_AND_SIMULATION} & End-to-end simulation precedents and MathWorks modeling references. \\
+\codeword{03_TWO_WAY_TIME_TRANSFER_AND_SYNC} & Classical two-way transfer, cooperative FMCW, modern picosecond wireless synchronization, and timing patents. \\
+\codeword{04_CODED_FMCW_AND_MULTIRADAR} & Phase-coded FMCW, RadCom, orthogonal waveform identity, and multi-node separation. \\
+\codeword{05_PRECISION_LIMITS_AND_NONIDEALITIES} & Phase noise, PLL behavior, ramp nonlinearity, estimator precision, phase evaluation, and CRLB thinking. \\
+\codeword{06_TI_AWR2944_IMPLEMENTATION} & Device/EVM/TRM material, DCA1000 capture, chirp programming, calibration, and MIMO references. \\
+\codeword{07_PROJECT_CONTEXT} & Saeed meeting notes and literature-acquisition context. \\
+\codeword{08_EQUATION_HANDBOOK} & Single self-contained mathematical reference PDF. \\
+\codeword{09_RESTRICTED_OR_CITATION_ONLY} & User-supplied publisher copies plus important sources that remain citation-only. \\
+\codeword{10_SIMULATION_WORKSPACE} & Reserved for the MATLAB implementation and tests. \\
+\bottomrule
+\end{longtable}
+
+\section{The five conceptual layers}
+\subsection{Layer 1: ordinary FMCW}
+A linear chirp maps propagation delay into a low intermediate frequency after dechirping. If the chirp slope is $S=B/T_c$, then an ideal one-way delay $\tau$ produces a beat magnitude $|f_b|=S\tau$ under the chosen sign convention. In a monostatic radar the delay is $2R/c$, while in an active cooperative link the one-way propagation delay is $d/c$.
+
+This is the elegance that motivated the project: the RF carrier and wide sweep bandwidth do not have to be digitized directly after dechirping. The information-bearing beat can sit in the kHz-to-MHz range.
+
+\subsection{Layer 2: reciprocal/two-way timing}
+Two-way exchange introduces two observables with opposite clock-offset signs. Under reciprocity and a fixed sign convention,
+\[
+\delta_{AB}=\tau+\theta,\qquad \delta_{BA}=\tau-\theta,
+\]
+so
+\[
+\tau=\frac{\delta_{AB}+\delta_{BA}}{2},\qquad
+\theta=\frac{\delta_{AB}-\delta_{BA}}{2}.
+\]
+If each effective delay is converted to a beat by the same chirp slope, the same sum/difference structure appears in frequency. This ideal relation is the right starting point for Saeed's first simulation, but it is only valid after assumptions about slope, frequency offset, reciprocity, and hardware delays are made explicit.
+
+\subsection{Layer 3: precision estimation}
+Picosecond timing cannot be judged by raw FFT-bin spacing. The Scherr et al. source frames high-accuracy FMCW as a frequency-and-phase estimation problem and demonstrates a CZT-based estimator with phase evaluation. The beat frequency supplies coarse unambiguous distance information, while phase can provide much finer local sensitivity. This is why the first simulator should contain an FFT for visualization but should not use nearest-bin selection as its final estimator.
+
+\subsection{Layer 4: nonideal oscillators and front ends}
+The Scheiblhofer simulator paper is important because it refuses to collapse the radar into one FFT. Its MATLAB architecture includes segmented sweep generation, frequency-to-phase conversion, synthesizer/PLL response, phase noise, thermal and quantization noise, separate TX/LO waveforms, RF/front-end transfer effects, target/channel delays, mixing, IF filtering, decimation, and ADC behavior. The Tschapek paper then shows why colored phase noise and systematic phase distortion should replace simplistic white-noise phase models when precision matters.
+
+\subsection{Layer 5: coded and networked FMCW}
+Once multiple radars occupy the same band, identity and separation become a waveform problem. Phase coding is attractive, but Uysal/Lampel/Kumbul-class work shows that coding cannot be bolted onto stretch processing without thinking about code misalignment, group delay, receiver sampling bandwidth, and decoding. This belongs after the ordinary reciprocal FMCW model has been validated.
+
+\section{The most important papers to read first}
+\begin{enumerate}
+\item \textbf{Roehr, Vossiek, Gulden (2007), High Precision Radar Distance Measurement and Synchronization.} This is the clean historical bridge from FMCW mixing to joint time/frequency synchronization. It explicitly mixes a received chirp with a local chirp and uses up/down sweeps to separate time and frequency offsets.
+\item \textbf{Gottinger et al. (2019), CFDDS-TWR.} This is the closest academic reference to the eventual two-active-radio experiment: two separate clocks, full-duplex FMCW exchange, local mixing at both units, and joint processing of both beat signals.
+\item \textbf{Scheiblhofer et al. (2008), Versatile FMCW Radar System Simulator.} This is the architectural model for a serious MATLAB simulator.
+\item \textbf{Scherr et al. (2015), Efficient Frequency and Phase Estimation.} This prevents the project from confusing FFT bin width with achievable parameter precision.
+\item \textbf{Ayhan et al. (2016) and Tschapek et al. (2022).} Together these define the ramp-nonlinearity/phase-noise side of the eventual error budget.
+\item \textbf{TI AWR2944 datasheet/TRM/chirp programming.} These map model parameters to what the hardware actually exposes.
+\item \textbf{Lampel/Uysal/Kumbul phase-coded FMCW work.} Read only after the uncoded reciprocal model is stable.
+\end{enumerate}
+
+\section{What the baseline literature already establishes}
+The baseline idea is not new: cooperative FMCW systems have used mixing between remote and local chirps to infer timing/frequency offsets for nearly two decades. The 2007 Roehr paper reports synchronization significantly below 100 ps and 10 Hz in its particular 5.8-GHz setup. The 2019 CFDDS-TWR paper goes substantially further by jointly processing the two directions between independent clocks and demonstrating coherent range/velocity measurements. Therefore any eventual research claim must be narrower than ``use FMCW for two-way synchronization.''
+
+This does not weaken the project. It gives us a mature benchmark. A strong AWR2944 project can still be interesting if it demonstrates a capability, estimator, coded multi-node extension, calibration strategy, or precision regime that prior systems did not address on commodity 77-GHz radar hardware.
+
+\section{Where likely novelty could eventually live}
+No novelty claim should be frozen before the two-radar hardware constraints are characterized. Plausible directions to test include:
+\begin{itemize}
+\item AWR2944-specific reciprocal timing on commodity automotive hardware, with a measured end-to-end calibration/error budget.
+\item A coded multi-node FMCW timing layer that preserves stretch-processing sampling advantages while robustly identifying weak cross-links.
+\item Estimation methods that combine beat frequency, beat phase, multiple chirps, and reciprocal measurements to reach precision far below a single FFT bin.
+\item Calibration or cancellation of asymmetric TX/RX group delay, chirp nonlinearity, and independent-PLL phase noise in the two-way estimate.
+\item Joint timing, ranging, and coherent distributed sensing where synchronization is not merely a support function but part of the measurement itself.
+\end{itemize}
+These are research hypotheses, not established contributions.
+
+\section{AWR2944-specific caution flags}
+The device documentation supports an external clock input and a programmable FMCW chirp engine. However, sharing a low-frequency reference does not automatically imply RF carrier-phase coherence or identical chirp start phase. The archive therefore treats ``shared reference'', ``matched clock rate'', ``time-aligned chirp trigger'', and ``RF phase coherent'' as distinct concepts. The eventual two-board experiment must measure which levels of coherence are actually achieved rather than assuming them.
+
+\section{What a trustworthy simulation must prove}
+Before adding realism, the ideal simulator must pass invariants that are independent of MATLAB implementation details:
+\begin{enumerate}
+\item Zero delay produces the expected zero/offset beat under the selected mixing convention.
+\item A known fractional delay produces $f_b=S\tau$ to estimator tolerance without integer-sample rounding.
+\item Doubling $S$ doubles the beat caused by a fixed delay.
+\item Reciprocal delays $\tau\pm\theta$ recover the injected $\tau$ and $\theta$ by sum/difference.
+\item Reversing the complex-mixing convention changes the beat sign but not the recovered physical delay when the estimator handles the sign consistently.
+\item A pure carrier-frequency offset produces the analytically predicted beat bias.
+\item A slope mismatch converts the beat from a stationary tone into a chirp/drift term.
+\end{enumerate}
+
+\section{Immediate deliverable recommended for Saeed}
+The minimal program-manager figure set should have three panels or figures:
+\begin{enumerate}
+\item Frequency versus time showing a transmitted chirp and a delayed received chirp.
+\item Dechirped beat spectrum/time trace showing that a high-frequency/wideband delay problem has become a low-frequency tone-estimation problem.
+\item Two-way A-to-B and B-to-A beats with the recovered time of flight and clock offset printed numerically.
+\end{enumerate}
+A later figure should show why nearest-bin FFT estimation is inadequate for the 10-ps target and how a phase-slope/CZT/parametric estimator improves it.
+
+\section{Source-status conventions}
+``Included topical'' means the bytes are present in an ordinary subject folder. ``Included restricted user supplied'' means the user uploaded a publisher/IEEE copy and it is stored only under the restricted folder. ``Citation only'' means the source is part of the research map but its PDF bytes are not present in this runtime or redistribution status is unclear. This distinction is administrative; it is not a ranking of scientific quality.
+
+\section{Recommended reading workflow}
+\begin{description}
+\item[Thirty-minute orientation.] TI fundamentals; meeting notes; pages 1--3 of the 2007 Roehr paper; abstract/introduction/Fig. 1 of CFDDS-TWR.
+\item[First deep session.] Derive chirp phase and dechirped beat by hand, then read the Scherr estimator paper's FMCW equations and CZT motivation.
+\item[Simulation architecture session.] Read Scheiblhofer's simulator blocks and make a one-to-one mapping from each block to a MATLAB function/module, even if most modules begin as ideal pass-throughs.
+\item[Precision session.] Read Ayhan, Herzel, and Tschapek in that order: deterministic ramp errors, PLL/receiver-noise precision, then colored phase-noise/systematic modeling.
+\item[Distributed-radar session.] Read CFDDS-TWR, loosely coupled bistatic radar, then coherent automotive radar networks.
+\item[Coded extension session.] Lampel, Uysal, Kumbul; only then design the code overlay.
+\end{description}
+
+\clearpage
+\section{High-priority bibliography and acquisition status}
+\small
+\begin{longtable}{@{}p{0.07\textwidth}p{0.53\textwidth}p{0.16\textwidth}p{0.15\textwidth}@{}}
+\toprule Year & Source & Priority / Status & DOI \\ \midrule
+\endfirsthead
+\toprule Year & Source & Priority / Status & DOI \\ \midrule
+\endhead
+2007 & Method for High Precision Radar Distance Measurement and Synchronization of Wireless Units & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/MWSYM.2007.380436} \\
+2008 & A Versatile FMCW Radar System Simulator for Millimeter-Wave Applications & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/EUMC.2008.4751778} \\
+2015 & An Efficient Frequency and Phase Estimation Algorithm With CRB Performance for FMCW Radar Applications & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TIM.2014.2381354} \\
+2016 & Impact of Frequency Ramp Nonlinearity, Phase Noise, and SNR on FMCW Radar Accuracy & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TMTT.2016.2599165} \\
+2018 & Analysis of Ranging Precision in an FMCW Radar Measurement Using a Phase-Locked Loop & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TCSI.2017.2733041} \\
+2019 & Coherent Full-Duplex Double-Sided Two-Way Ranging and Velocity Measurement Between Separate Incoherent Radio Units & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TMTT.2019.2902553} \\
+2020 & System Level Synchronization of Phase-Coded FMCW Automotive Radars for RadCom & P1 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.23919/EuCAP48036.2020.9135417} \\
+2021 & Coherent Signal Processing for Loosely Coupled Bistatic Radar & P1 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TAES.2021.3050650} \\
+2021 & Coherent Automotive Radar Networks: The Next Generation of Radar-Based Imaging and Mapping & P1 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/JMW.2020.3034475} \\
+2022 & Detailed Analysis and Modeling of Phase Noise and Systematic Phase Distortions in FMCW Radar Systems & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/JMW.2022.3195574} \\
+2007 & Method for High Precision Clock Synchronization in Wireless Systems with Application to Radio Navigation & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/RWS.2007.351890} \\
+2008 & Precise Distance Measurement with Cooperative FMCW Radar Units & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/RWS.2008.4463606} \\
+2008 & Precise Distance and Velocity Measurement for Real Time Locating in Multipath Environments Using a Frequency-Modulated Continuous-Wave Secondary Radar Approach & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TMTT.2008.2003137} \\
+2008 & Performance Analysis of Cooperative FMCW Radar Distance Measurement Systems & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/MWSYM.2008.4633118} \\
+2013 & A 77-GHz Cooperative Radar System Based on Multi-Channel FMCW Stations for Local Positioning Applications & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TMTT.2012.2227781} \\
+2012 & Accuracy Limits of a K-Band FMCW Radar with Phase Evaluation & P0 / \nolinkurl{citation_only} &  \\
+2012 & The Effect of Phase Noise on Ranging Uncertainty in FMCW Secondary Radar-Based Local Positioning Systems & P0 / \nolinkurl{citation_only} &  \\
+1992 & Linear FMCW Radar Techniques & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1049/ip-f-2.1992.0048} \\
+2023 & FMCW Radar Transceiver Synchronization in a Multistatic Microwave Tomography System & P0 / \nolinkurl{citation_only} &  \\
+2020 & Phase-Coded FMCW Automotive Radar: System Design and Interference Mitigation & P1 / \nolinkurl{included_acquired_research_copy} & \nolinkurl{10.1109/TVT.2019.2953305} \\
+2024 & On the Synchronization of Uncoupled Multistatic PMCW Radars & P1 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TMTT.2024.3359035} \\
+2024 & Over-the-Air Synchronization for Coherent Digital Automotive Radar Networks & P1 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TRS.2024.3449333} \\
+2024 & Signal Model for Coherent Processing of Uncoupled and Low Frequency Coupled MIMO Radar Networks & P1 / \nolinkurl{citation_only} & \nolinkurl{10.1109/JMW.2023.3334757} \\
+\bottomrule
+\end{longtable}
+\normalsize
+\section{Corpus-wide source catalog}
+The CSV in \codeword{00_START_HERE/bibliography.csv} is more convenient for filtering and machine use. The table below is included so the PDF remains useful by itself.
+\small
+\begin{longtable}{@{}p{0.07\textwidth}p{0.53\textwidth}p{0.16\textwidth}p{0.15\textwidth}@{}}
+\toprule Year & Source & Priority / Status & DOI \\ \midrule
+\endfirsthead
+\toprule Year & Source & Priority / Status & DOI \\ \midrule
+\endhead
+2007 & Method for High Precision Radar Distance Measurement and Synchronization of Wireless Units & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/MWSYM.2007.380436} \\
+2008 & A Versatile FMCW Radar System Simulator for Millimeter-Wave Applications & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/EUMC.2008.4751778} \\
+2015 & An Efficient Frequency and Phase Estimation Algorithm With CRB Performance for FMCW Radar Applications & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TIM.2014.2381354} \\
+2016 & Impact of Frequency Ramp Nonlinearity, Phase Noise, and SNR on FMCW Radar Accuracy & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TMTT.2016.2599165} \\
+2018 & Analysis of Ranging Precision in an FMCW Radar Measurement Using a Phase-Locked Loop & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TCSI.2017.2733041} \\
+2019 & Coherent Full-Duplex Double-Sided Two-Way Ranging and Velocity Measurement Between Separate Incoherent Radio Units & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TMTT.2019.2902553} \\
+2020 & System Level Synchronization of Phase-Coded FMCW Automotive Radars for RadCom & P1 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.23919/EuCAP48036.2020.9135417} \\
+2021 & Coherent Signal Processing for Loosely Coupled Bistatic Radar & P1 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/TAES.2021.3050650} \\
+2021 & Coherent Automotive Radar Networks: The Next Generation of Radar-Based Imaging and Mapping & P1 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/JMW.2020.3034475} \\
+2022 & Detailed Analysis and Modeling of Phase Noise and Systematic Phase Distortions in FMCW Radar Systems & P0 / \nolinkurl{included_restricted_user_supplied} & \nolinkurl{10.1109/JMW.2022.3195574} \\
+2007 & Method for High Precision Clock Synchronization in Wireless Systems with Application to Radio Navigation & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/RWS.2007.351890} \\
+2008 & Precise Distance Measurement with Cooperative FMCW Radar Units & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/RWS.2008.4463606} \\
+2008 & Precise Distance and Velocity Measurement for Real Time Locating in Multipath Environments Using a Frequency-Modulated Continuous-Wave Secondary Radar Approach & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TMTT.2008.2003137} \\
+2008 & Performance Analysis of Cooperative FMCW Radar Distance Measurement Systems & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/MWSYM.2008.4633118} \\
+2013 & A 77-GHz Cooperative Radar System Based on Multi-Channel FMCW Stations for Local Positioning Applications & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TMTT.2012.2227781} \\
+2012 & Accuracy Limits of a K-Band FMCW Radar with Phase Evaluation & P0 / \nolinkurl{citation_only} &  \\
+2012 & The Effect of Phase Noise on Ranging Uncertainty in FMCW Secondary Radar-Based Local Positioning Systems & P0 / \nolinkurl{citation_only} &  \\
+1992 & Linear FMCW Radar Techniques & P0 / \nolinkurl{citation_only} & \nolinkurl{10.1049/ip-f-2.1992.0048} \\
+2023 & FMCW Radar Transceiver Synchronization in a Multistatic Microwave Tomography System & P0 / \nolinkurl{citation_only} &  \\
+2020 & Phase-Coded FMCW Automotive Radar: System Design and Interference Mitigation & P1 / \nolinkurl{included_acquired_research_copy} & \nolinkurl{10.1109/TVT.2019.2953305} \\
+2024 & On the Synchronization of Uncoupled Multistatic PMCW Radars & P1 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TMTT.2024.3359035} \\
+2024 & Over-the-Air Synchronization for Coherent Digital Automotive Radar Networks & P1 / \nolinkurl{citation_only} & \nolinkurl{10.1109/TRS.2024.3449333} \\
+2024 & Signal Model for Coherent Processing of Uncoupled and Low Frequency Coupled MIMO Radar Networks & P1 / \nolinkurl{citation_only} & \nolinkurl{10.1109/JMW.2023.3334757} \\
+ & TI Fundamentals of mmWave Radar Sensors & reference / \nolinkurl{included_topical} &  \\
+ & TI Getting Started with mmWave Sensors 2025 & reference / \nolinkurl{included_topical} &  \\
+ & MathWorks Design of FMCW Radars for Active Safety Applications & reference / \nolinkurl{included_topical} &  \\
+ & MathWorks Radar System Design Using MATLAB Simulink 2016 & reference / \nolinkurl{included_topical} &  \\
+ & NIST Fundamentals of Two Way Time Transfers by Satellite & reference / \nolinkurl{included_topical} &  \\
+ & BIPM TWSTFT Calibration Guidelines 2016 & reference / \nolinkurl{included_topical} &  \\
+ & 2022 Merlo Mghabghab Nanzer Wireless Picosecond Time Synchronization & reference / \nolinkurl{included_topical} &  \\
+ & 2023 Merlo High Accuracy Wireless Time Frequency Transfer Distributed Beamforming & reference / \nolinkurl{included_topical} &  \\
+ & 2024 Shandi Merlo Nanzer Wireless Picosecond Time Synchronization Dynamic Connectivity & reference / \nolinkurl{included_topical} &  \\
+ & 2024 Decentralized Picosecond Synchronization Distributed Wireless Systems & reference / \nolinkurl{included_topical} &  \\
+ & Honeywell EP2985625A1 FMCW Radar with Timing Synchronization & reference / \nolinkurl{included_topical} &  \\
+ & Honeywell US20160047892A1 FMCW Radar Phase Encoded Data Channel & reference / \nolinkurl{included_topical} &  \\
+ & 2022 Kumbul Smoothed Phase Coded FMCW & reference / \nolinkurl{included_topical} &  \\
+ & TI AWR2943 AWR2944 Datasheet RevE 2026 & reference / \nolinkurl{included_topical} &  \\
+ & TI AWR294x Technical Reference Manual RevD & reference / \nolinkurl{included_topical} &  \\
+ & TI AWR294x Device Errata RevC & reference / \nolinkurl{included_topical} &  \\
+ & TI AWR2944 AWR2944P EVM User Guide RevC & reference / \nolinkurl{included_topical} &  \\
+ & TI mmWave Sensor Raw Data Capture DCA1000 mmWave Studio & reference / \nolinkurl{included_topical} &  \\
+ & TI Programming Chirp Parameters & reference / \nolinkurl{included_topical} &  \\
+ & TI Cascade Coherency Phase Shifter Calibration & reference / \nolinkurl{included_topical} &  \\
+ & TI Self Calibration mmWave Radar Devices & reference / \nolinkurl{included_topical} &  \\
+ & TI MIMO Radar & reference / \nolinkurl{included_topical} &  \\
+ & 2026-08-07 Saeed Meeting Notes & reference / \nolinkurl{included_topical} &  \\
+ & FMCW TWTT acquisition status 2026-08-10.md & reference / \nolinkurl{included_topical} &  \\
+ & 2013 Pfeffer FMCW MIMO Frequency Division TX Beamforming & reference / \nolinkurl{included_restricted_user_supplied} &  \\
+ & 2014 Frischen Hasch Waldschmidt - Cooperative Radar: Uncorrelated Phase Noise & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2014 Rajan van der Veen - Joint Ranging and Synchronization for Anchorless Mobile Networks & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2015 Dwivedi - Joint Ranging and Clock Parameter Estimation via Two-Way RTT & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2015 ITU - Two-Way Satellite Time and Frequency Transfer & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2016 Lopez-Martinez et al. - Simulation of FMCW Radar with SDR & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2016 Scheiblhofer - In-Chirp FSK Communication Between Cooperative 77-GHz Radar Stations & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2017 TI - Complex Baseband Architecture in FMCW Radar Systems & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2018 Kazaz - Joint Ranging and Clock Synchronization for Dense IoT & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2018 Park et al. - Leakage Mitigation / Internal Delay Compensation in FMCW & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2018 Svensson - High Resolution Frequency Estimation for FMCW Radar (thesis) & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2019 Mueller Diewald - Cooperative Radar Signature Method for Unambiguity & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2019 Wang et al. - Range Accuracy of FMCW Radar with Source Nonlinearity & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2020 Infineon - Phase Coded FMCW Radar patent & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2020 UIUC - FMCW Radar lecture & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2020 Uysal Orru - Phase-Coded FMCW Automotive Radar: Application and Challenges & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2022 Architectures and Synchronization Techniques for Distributed Satellite Systems - Survey & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2022 Duerr - Coherent Multistatic MIMO Radar Network with Phase-Noise-Optimized Synthesis & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2022 MIT - Radar and Coherent Sensor Processing lecture & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2022 TI - Interference Mitigation for AWR/IWR Devices & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2023 Tagliaferri et al. - Cooperative Coherent Multistatic Imaging and Phase Synchronization & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2024 Ahmadi et al. - Distributed Massive MIMO FMCW Radar Simulator with Ray Tracing & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2024 Chen Niknejad - RF-Domain Leakage Cancellation for FMCW Radars & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2024 Huang et al. - Overview of Millimeter-Wave Radar Modeling Methods & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2024 Kou et al. - Distributed PMCW Radar Network Phase Noise & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2024 Multi-Objective Distributed Beamforming with High-Accuracy Synchronization & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2025 BIPM - Time Dissemination/TWSTFT lecture & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2025 DLR - Investigation of CW/LFM Waveforms for Bi/Multistatic Radar Synchronization & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2025 Eid - Novel Simulation Technique for UWB FMCW Radar & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2025 Han Meng Masouros - OTA Time/Frequency Synchronization for Distributed ISAC & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2025 Multistatic Radar Performance with Distributed Wireless Synchronization / BCRLB & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2025 Real-Time High-Accuracy Digital Wireless Time/Frequency/Phase Synchronization & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & 2026 UCSB - Introduction to mmWave Radar Sensing Lab Notes & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+ & Merlo - Picosecond NLOS Wireless Time/Frequency Transfer presentation & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+2019 & 2019 MathWorks Automotive Radar Development MATLAB & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+2022 & 2022 Duerr Coherent Multistatic MIMO Radar Network Phase Noise Optimized Synthesis & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+2024 & 2024 Ahmadi et al Distributed Massive MIMO FMCW Radar Simulator Ray Tracing & P2 / \nolinkurl{included_acquired_research_copy} &  \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+\clearpage
+\section{Detailed source cards for the P0/P1 set}
+The following cards are intentionally repetitive in structure. They are designed as a working research notebook: every important source should answer ``what do I extract into the model?'' rather than merely ``what did the authors do?''
+\subsection*{Method for High Precision Radar Distance Measurement and Synchronization of Wireless Units (2007)}
+\textbf{Category:} TWTT / cooperative FMCW. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.1109/MWSYM.2007.380436}.
+
+\textbf{Why it is in the corpus.} Core predecessor; <100 ps time synchronization reported.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{A Versatile FMCW Radar System Simulator for Millimeter-Wave Applications (2008)}
+\textbf{Category:} MATLAB / simulation. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.1109/EUMC.2008.4751778}.
+
+\textbf{Why it is in the corpus.} Modular MATLAB simulator from sweep synthesis through baseband.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{An Efficient Frequency and Phase Estimation Algorithm With CRB Performance for FMCW Radar Applications (2015)}
+\textbf{Category:} frequency/phase estimation. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.1109/TIM.2014.2381354}.
+
+\textbf{Why it is in the corpus.} CZT plus phase evaluation; CRB context.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Impact of Frequency Ramp Nonlinearity, Phase Noise, and SNR on FMCW Radar Accuracy (2016)}
+\textbf{Category:} nonidealities. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.1109/TMTT.2016.2599165}.
+
+\textbf{Why it is in the corpus.} Analytical and measured accuracy effects.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Analysis of Ranging Precision in an FMCW Radar Measurement Using a Phase-Locked Loop (2018)}
+\textbf{Category:} phase noise / PLL. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.1109/TCSI.2017.2733041}.
+
+\textbf{Why it is in the corpus.} PLL phase noise plus receiver noise precision model.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Coherent Full-Duplex Double-Sided Two-Way Ranging and Velocity Measurement Between Separate Incoherent Radio Units (2019)}
+\textbf{Category:} TWTT / cooperative FMCW. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.1109/TMTT.2019.2902553}.
+
+\textbf{Why it is in the corpus.} Closest academic analogue: reciprocal FMCW with separate clocks.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{System Level Synchronization of Phase-Coded FMCW Automotive Radars for RadCom (2020)}
+\textbf{Category:} coded FMCW. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.23919/EuCAP48036.2020.9135417}.
+
+\textbf{Why it is in the corpus.} Phase-coded FMCW synchronization / RadCom.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Coherent Signal Processing for Loosely Coupled Bistatic Radar (2021)}
+\textbf{Category:} distributed coherent radar. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.1109/TAES.2021.3050650}.
+
+\textbf{Why it is in the corpus.} Coherent processing despite only loose coupling.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Coherent Automotive Radar Networks: The Next Generation of Radar-Based Imaging and Mapping (2021)}
+\textbf{Category:} radar networks. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.1109/JMW.2020.3034475}.
+
+\textbf{Why it is in the corpus.} Distributed radar classification and 76-77 GHz experiments.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Detailed Analysis and Modeling of Phase Noise and Systematic Phase Distortions in FMCW Radar Systems (2022)}
+\textbf{Category:} phase noise / nonidealities. \textbf{Status:} \nolinkurl{included_restricted_user_supplied}. \textbf{DOI/ID:} \nolinkurl{10.1109/JMW.2022.3195574}.
+
+\textbf{Why it is in the corpus.} Colored PN plus systematic phase-error Monte Carlo model.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Method for High Precision Clock Synchronization in Wireless Systems with Application to Radio Navigation (2007)}
+\textbf{Category:} clock synchronization. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} \nolinkurl{10.1109/RWS.2007.351890}.
+
+\textbf{Why it is in the corpus.} Foundational clock synchronization; full copy not physically present in this runtime.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Precise Distance Measurement with Cooperative FMCW Radar Units (2008)}
+\textbf{Category:} cooperative FMCW. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} \nolinkurl{10.1109/RWS.2008.4463606}.
+
+\textbf{Why it is in the corpus.} Core cooperative FMCW ranging paper.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Precise Distance and Velocity Measurement for Real Time Locating in Multipath Environments Using a Frequency-Modulated Continuous-Wave Secondary Radar Approach (2008)}
+\textbf{Category:} cooperative FMCW. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} \nolinkurl{10.1109/TMTT.2008.2003137}.
+
+\textbf{Why it is in the corpus.} Detailed range/velocity/multipath model.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Performance Analysis of Cooperative FMCW Radar Distance Measurement Systems (2008)}
+\textbf{Category:} precision / phase noise. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} \nolinkurl{10.1109/MWSYM.2008.4633118}.
+
+\textbf{Why it is in the corpus.} Phase-noise performance comparison; web-accessible metadata, PDF not copied.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{A 77-GHz Cooperative Radar System Based on Multi-Channel FMCW Stations for Local Positioning Applications (2013)}
+\textbf{Category:} 77 GHz cooperative FMCW. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} \nolinkurl{10.1109/TMTT.2012.2227781}.
+
+\textbf{Why it is in the corpus.} Important bridge to 77-GHz hardware.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Accuracy Limits of a K-Band FMCW Radar with Phase Evaluation (2012)}
+\textbf{Category:} frequency/phase estimation. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} not recorded.
+
+\textbf{Why it is in the corpus.} CRLB and phase-evaluation precision precedent.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{The Effect of Phase Noise on Ranging Uncertainty in FMCW Secondary Radar-Based Local Positioning Systems (2012)}
+\textbf{Category:} phase noise. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} not recorded.
+
+\textbf{Why it is in the corpus.} Directly relevant to secondary/cooperative FMCW PN.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Linear FMCW Radar Techniques (1992)}
+\textbf{Category:} FMCW fundamentals. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} \nolinkurl{10.1049/ip-f-2.1992.0048}.
+
+\textbf{Why it is in the corpus.} Classic reference.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{FMCW Radar Transceiver Synchronization in a Multistatic Microwave Tomography System (2023)}
+\textbf{Category:} multistatic synchronization. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} not recorded.
+
+\textbf{Why it is in the corpus.} Thesis-length synchronization treatment.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Phase-Coded FMCW Automotive Radar: System Design and Interference Mitigation (2020)}
+\textbf{Category:} coded FMCW. \textbf{Status:} \nolinkurl{included_acquired_research_copy}. \textbf{DOI/ID:} \nolinkurl{10.1109/TVT.2019.2953305}.
+
+\textbf{Why it is in the corpus.} Accepted manuscript known at TU Delft; not copied due repository download restriction.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{On the Synchronization of Uncoupled Multistatic PMCW Radars (2024)}
+\textbf{Category:} coded / multistatic synchronization. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} \nolinkurl{10.1109/TMTT.2024.3359035}.
+
+\textbf{Why it is in the corpus.} Digital carrier/timing recovery analog for future coded FMCW.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Over-the-Air Synchronization for Coherent Digital Automotive Radar Networks (2024)}
+\textbf{Category:} radar network synchronization. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} \nolinkurl{10.1109/TRS.2024.3449333}.
+
+\textbf{Why it is in the corpus.} CFO/SFO/timing correction.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\subsection*{Signal Model for Coherent Processing of Uncoupled and Low Frequency Coupled MIMO Radar Networks (2024)}
+\textbf{Category:} radar network signal model. \textbf{Status:} \nolinkurl{citation_only}. \textbf{DOI/ID:} \nolinkurl{10.1109/JMW.2023.3334757}.
+
+\textbf{Why it is in the corpus.} Strong modern nonideal signal model.
+
+\textbf{How to use it.} Read it with one concrete question in mind: which term, estimator, hardware assumption, or calibration step from this source should become a named parameter or unit test in our simulator? Do not merely reproduce its plots. Record the assumptions that make its result possible and check whether those assumptions hold for two AWR2944 units.
+
+\section{Project decision log implied by the literature}
+\begin{longtable}{@{}p{0.21\textwidth}p{0.33\textwidth}p{0.37\textwidth}@{}}
+\toprule Decision & Chosen default & Reason / condition for revisiting \\ \midrule
+RF representation & complex analytic/baseband & preserves exact delay/dechirp physics without 77-GHz sample rate; revisit only for a specifically RF-nonlinear effect \\
+Initial waveform & one linear up-chirp & easiest invariant $f_b=S\tau$; add down-chirp when CFO must be separated \\
+Initial clock model & epoch offset only & matches Saeed's first ideal plot request; add skew/CFO next \\
+First estimator & phase-slope LS + FFT display & transparent sub-bin estimator with a visual FFT; later benchmark CZT/ML \\
+Noise in V0/V1 & disabled & establishes numerical truth before Monte Carlo \\
+First nonideality & CFO + opposite slopes & foundational cooperative literature shows it is structurally separable and physically important \\
+Second nonideality & AWGN & allows estimator comparison and CRLB sanity check \\
+Phase noise & colored PSD, later & white phase jitter is not trustworthy for precision prediction \\
+Coded FMCW & deferred & code alignment/group-delay problem should not contaminate the baseline \\
+Hardware phase coherence & measured, not assumed & common reference frequency is weaker than RF phase coherence \\
+\bottomrule
+\end{longtable}
+
+\section{Questions to bring to the next Saeed meeting}
+\begin{enumerate}
+\item Is the immediate target a proof-of-principle \emph{clock-offset estimate}, a calibrated absolute time-transfer measurement, or simply a compelling FMCW timing plot for the program manager?
+\item Does he intend the two AWR units to share an external reference clock, a trigger, both, or initially neither?
+\item Is ``10 ps'' a desired single-shot precision, averaged precision, absolute accuracy after calibration, or a long-term synchronization specification?
+\item Does the first hardware experiment need simultaneous full-duplex transmission, or can we begin with scheduled reciprocal chirps?
+\item Is the long-term coded scheme meant primarily for node identity, interference rejection, multi-radar simultaneous operation, or embedded communications?
+\item Which prior paper did Saeed have in mind when he said the baseline has already been done? If he can name it, compare it explicitly against the 2007 Roehr and 2019 Gottinger lines.
+\end{enumerate}
+
+\section{One-page mental model}
+Think of the project as a measurement chain:
+\[
+\begin{gathered}
+\boxed{\text{clock/path delay}}\rightarrow
+\boxed{\text{relative chirp phase}}\rightarrow
+\boxed{\text{low-frequency beat}}\\[0.4em]
+\downarrow\\[-0.2em]
+\boxed{\text{frequency/phase estimator}}\rightarrow
+\boxed{\text{two-way algebra}}
+\end{gathered}
+\]
+Every later realism block perturbs one arrow in this chain. CFO and slope error perturb relative chirp phase; phase noise perturbs both waveform generation and the beat; group delay perturbs the physical/electrical delay; ADC noise and windowing perturb the estimator; asymmetry perturbs two-way cancellation; coding perturbs waveform identity and receiver alignment. Keeping this chain explicit is the easiest way to avoid a simulator that becomes impossible to reason about.
+
+\end{document}
