@@ -1,5 +1,5 @@
 % run_all.m
-% Master entry point for V0/V1 FMCW timing simulation.
+% Master entry point for V0/V1/V2a/V2b FMCW timing simulation.
 %
 % Establishes paths relative to this script, runs all tests,
 % then runs all demos (which generate figures and results).
@@ -42,5 +42,11 @@ demo_fig05_spectrum_family;
 fprintf('\n');
 demo_fig06_slope_sensitivity;
 
+fprintf('\n--- V2a (CFO) ---\n\n');
+demo_v2a_cfo;
+
+fprintf('\n--- V2b (Phase Coding) ---\n\n');
+demo_v2b_coding;
+
 %% Done
-fprintf('\n=== ALL DONE -- V0/V1 PASS ===\n');
+fprintf('\n=== ALL DONE -- V0/V1/V2a/V2b PASS ===\n');

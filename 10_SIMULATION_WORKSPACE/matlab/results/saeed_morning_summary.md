@@ -1,6 +1,6 @@
 # FMCW Two-Way Time Transfer -- V0/V1 Simulation Results
 
-**Date:** 2026-08-10
+**Date:** 2026-08-12
 **Model:** Ideal analytic complex-baseband FMCW truth model
 **Status:** IDEAL / NOISE-FREE simulation only
 
