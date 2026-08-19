@@ -48,5 +48,8 @@ demo_v2a_cfo;
 fprintf('\n--- V2b (Phase Coding) ---\n\n');
 demo_v2b_coding;
 
+fprintf('\n--- V3 (Group Delay Filter) ---\n\n');
+demo_v3_gdf_stage1;
+
 %% Done
-fprintf('\n=== ALL DONE -- V0/V1/V2a/V2b PASS ===\n');
+fprintf('\n=== ALL DONE -- V0/V1/V2a/V2b/V3 PASS ===\n');
