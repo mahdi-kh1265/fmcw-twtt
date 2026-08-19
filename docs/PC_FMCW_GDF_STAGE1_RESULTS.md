@@ -13,29 +13,33 @@ The filter was implemented along a zero-padded, reference-safe path (`N_pad = 40
 ## Q1: Envelope Alignment Mechanism
 **Verdict: PASS WITH DISPERSION**
 
-By derotating the fast-time beat frequency oracle-style, we directly observed the continuous envelope. The GDF successfully shifted the envelope correlation toward the unshifted code (`rho` went from 0.9921 to 0.9936) and away from the delayed code (1.0000 down to 0.9970). However, because the filter is applied across a wide 10 MHz bandwidth, the sharp rectangular transitions of the phase code suffer from noticeable dispersion. This dispersion prevents perfect crossover, but the mechanism unequivocally operates in the mathematically predicted direction. 
+To overcome the sub-sample evaluation insensitivity of the physical `7 ns` delay, a delay-sensitivity sweep (`delta = 7, 50, 100, 150 ns`) was conducted using a 16-chip code. The results demonstrate that the group-delay filter systematically moves the alignment preference away from the delayed code and towards the unshifted code across both full-record and transition-focused metrics. 
+
+However, because the quadratic phase filter is applied across a wide 10 MHz bandwidth, the sharp rectangular transitions of the phase code suffer from noticeable dispersion. This dispersion prevents perfect whole-record correlation recovery (`rho_after_unshifted < 1.0`), but the mechanism unequivocally operates in the mathematically predicted direction.
 
 *(Analytic testing confirmed `exp(+j*2*pi*nu*f_b/S)` perfectly cancels the code-delay phase `exp(-j*2*pi*nu*delta)`).*
 
 ## Q2: Simultaneous Node Separation
 **Verdict: FAIL**
 
-Having confirmed the GDF envelope realignment mechanism, we tested the realizable multi-node case: a strong node A (`alpha_A=1.0`) and a weak node B (`alpha_B=0.3`). 
-A zero-padded spectral detector (`Nfft=16384`) evaluated the peak structures free of coarse N=256 grid quantization errors.
+Having confirmed the GDF envelope realignment mechanism, we tested the realizable multi-node case: a strong node A (`alpha_A=1.0`) and a weak node B (`alpha_B=0.3`). A zero-padded spectral detector (`Nfft=16384`) evaluated the peak structures.
+
+To establish final recovery, the receiver must satisfy two independent constraints:
+1. **Spectral Prominence:** `SIR_dB >= 0 dB` (classified as DETECTED)
+2. **Frequency Accuracy:** The detected peak must lie within `0.5 * Delta_f_native` (`19531.25 Hz`) of the theoretical beat frequency (classified as FREQUENCY_RECOVERED).
 
 **Code Length Study Results:**
-| L  | Naive SIR_B | GDF SIR_B | Classification |
-|----|-------------|-----------|----------------|
-| 2  | -1.82 dB    | -1.81 dB  | AMBIGUOUS      |
-| 4  | -0.10 dB    | -0.10 dB  | AMBIGUOUS      |
-| 8  |  9.81 dB    |  9.73 dB  | DETECTED       |
-| 16 | -6.21 dB    | -7.23 dB  | MASKED         |
+| L  | Naive SIR | GDF SIR | Spectral Class | Freq. Error | Freq. Recovered | Final Recovery |
+|----|-----------|---------|----------------|-------------|-----------------|----------------|
+| 2  | -1.82 dB  | -1.81 dB| AMBIGUOUS      | 78.0 kHz    | NO              | NO             |
+| 4  | -0.10 dB  | -0.10 dB| AMBIGUOUS      | 46.9 kHz    | NO              | NO             |
+| 8  |  9.81 dB  |  9.73 dB| DETECTED       | 31.8 kHz    | NO              | NO             |
+| 16 | -6.21 dB  | -7.23 dB| MASKED         |  2.5 kHz    | YES             | NO             |
 
-*(Note: At L=16, the main lobe of the desired peak becomes so narrow that interference side-lobes dominate the detection window, pushing it back into MASKED).*
+*Crucial Observations:*
+- At **L=8**, the spectral structure is prominent (`+9.73 dB`), but it is a shifted artifact biased by ~31.8 kHz. Frequency recovery fails.
+- At **L=16**, the correct frequency is localized (`2.5 kHz` error, well within the 19.5 kHz tolerance), but the side-lobe interference is so severe that the peak is MASKED (`-7.23 dB`).
 
-**Does the group-delay filter solve the simultaneous two-node structured interference problem for our architecture?**
+**Conclusion**
 
-**No.** Under the tested parameters, the GDF performs its intended code-alignment operation, but GDF + simple Walsh despreading/spectral detection remains insufficient for the strong/weak case. The continuous time-domain phase rotation of the interfering chirp's beat signal spectrally spreads the Walsh code energy across the band. This interference dominates the weak node's signal. The result does not establish the impossibility of fast-time PC-FMCW generally, but proves that the current simple receiver architecture cannot achieve the necessary isolation.
-
-## AWR2944 Hardware Caveat
-The next step is to evaluate slow-time (per-chirp) coding. Unlike fast-time coding, slow-time coding experiences fundamentally different beat-frequency rotation dynamics over the coherent processing interval (CPI). This will map the validated mathematical baselines to the exact architecture required by practical AWR2944 millimeter-wave hardware.
+Under the tested ideal/noise-free parameters, the current padded-GDF + Walsh despreading + simple spectral-detection receiver did not simultaneously provide sufficient spectral prominence and accurate weak-node beat recovery for any tested L = 2,4,8,16. The continuous time-domain phase rotation of the interfering chirp's beat signal spectrally spreads the Walsh code energy, overwhelming the weak node. This result establishes the strict limitations of the current simple linear despreading/detection architecture.
