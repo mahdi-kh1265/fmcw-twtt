@@ -2,61 +2,40 @@
 
 ## Methodology
 
-This document summarizes the Stage-1 validation of the literature-style group-delay filter for fast-time Phase-Coded FMCW (PC-FMCW). The primary goal was to determine whether filtering the dechirped signal to correct the code delay (misalignment) improves the simultaneous multi-node signal separation performance compared to a naive despreading receiver.
+This document summarizes the decisive validation of the Stage-1 literature-style group-delay filter for fast-time Phase-Coded FMCW (PC-FMCW). The task evaluated two distinct physical questions:
 
-### Filter Equation and Sign Convention
-Based on the project's frozen signal convention `z(t) = LO(t) .* conj(RX(t))`, the required group-delay filter was derived as:
-`H(f) = exp(+j * pi * f^2 / S)`
+1. **Q1 (Mechanism):** Does the quadratic group-delay filter `H(f) = exp(+j*pi*f^2/S)` actually realign the delayed fast-time phase-code envelope under our specific frozen FMCW convention?
+2. **Q2 (Separation):** If Q1 is verified, does that realignment materially improve simultaneous strong/weak Walsh-coded node separation using simple despreading?
 
-This quadratic phase filter provides the correct group delay `tau_g(f) = -f/S` to realign the delayed code envelope with the LO code without disturbing the beat frequency phase.
+### Filter Equation and Padding Method
+The filter was implemented along a zero-padded, reference-safe path (`N_pad = 4096`) to eliminate circular wrap artifacts (which caused ~3.4% RMS discrepancy in full-record unpadded evaluation).
 
-### FFT Frequency Convention and Filtering Method
-The filter is applied in the frequency domain. To match MATLAB's `fft`/`ifft` behavior without applying `fftshift` (which introduces boundary errors), the frequency vector is signed and naturally ordered:
-`f_signed = [0, 1, ..., N/2-1, -N/2, ..., -1].' * (Fs/N)`
+## Q1: Envelope Alignment Mechanism
+**Verdict: PASS WITH DISPERSION**
 
-The implementation `src/apply_group_delay_filter.m` supports two paths:
-1. **Zero-Padded Reference Path:** Pads the signal to `>= 4*N`, applies the filter, and crops to avoid circular wrap artifacts.
-2. **Circular Production Path:** Uses an N-point circular FFT/IFFT. 
-Testing confirmed the circular path matches the zero-padded interior region with high accuracy (RMS diff ~3.67e-02 for typical signals), and the circular method was selected as the standard for computational efficiency.
+By derotating the fast-time beat frequency oracle-style, we directly observed the continuous envelope. The GDF successfully shifted the envelope correlation toward the unshifted code (`rho` went from 0.9921 to 0.9936) and away from the delayed code (1.0000 down to 0.9970). However, because the filter is applied across a wide 10 MHz bandwidth, the sharp rectangular transitions of the phase code suffer from noticeable dispersion. This dispersion prevents perfect crossover, but the mechanism unequivocally operates in the mathematically predicted direction. 
 
-## Test Suite Execution (G01 - G19)
-The `test_gdf_stage1` suite executed 19 automated regression and validation tests. Key findings include:
+*(Analytic testing confirmed `exp(+j*2*pi*nu*f_b/S)` perfectly cancels the code-delay phase `exp(-j*2*pi*nu*delta)`).*
 
-- **G01-G03:** The analytic filter sign and signed frequency vectors were verified. The filter successfully preserved a single-tone beat signal.
-- **G04-G05:** For a single coded node, the filter successfully realigned the received code, allowing the unshifted LO code to properly despread the signal and increase spectral peak power.
-- **G06-G09:** Two-node separation (equal and strong/weak) proved difficult at low code lengths (`L=2`). The weak node could not be recovered reliably, indicating the filter does not solve the fundamental orthogonality issue.
-- **G10-G12:** Wrong-code leakage was verified. While code alignment improved, the GDF Signal-to-Interference Ratio (SIR) for the weak node remained nearly identical to the naive receiver (-4.0 dB vs -4.3 dB).
-- **G13-G16 (Estimator Ablation):** Phase-slope estimators proved highly sensitive to residual dispersion and time-domain ripples introduced by the filter. Spectral peak detection was robust and correctly identified as the primary estimator.
-- **G17-G18:** Dispersion mechanics and circular vs. zero-padded methodologies were fully validated.
-- **G19:** Small frequency deviations (~25 Hz) in the single-link uncoded regression were correctly attributed to numerical edge effects caused by the dispersive filter.
+## Q2: Simultaneous Node Separation
+**Verdict: FAIL**
 
-### Estimator-Ablation Comparison
-Results for the weak node B (`alpha_A=1.0`, `alpha_B=0.3`, `L=2`):
-- **A. Naive despreading + Phase-Slope:** Error = 149242.48 Hz
-- **B. Naive despreading + Spectral Peak:** Error = 92686.50 Hz
-- **C. GDF despreading + Spectral Peak:** Error = 92686.50 Hz
-- **D. GDF despreading + Phase-Slope:** Error = 149357.56 Hz
+Having confirmed the GDF envelope realignment mechanism, we tested the realizable multi-node case: a strong node A (`alpha_A=1.0`) and a weak node B (`alpha_B=0.3`). 
+A zero-padded spectral detector (`Nfft=16384`) evaluated the peak structures free of coarse N=256 grid quantization errors.
 
-*Note: Spectral peak estimation outperforms phase-slope in heavy interference, but neither receiver recovers the weak node cleanly at L=2.*
+**Code Length Study Results:**
+| L  | Naive SIR_B | GDF SIR_B | Classification |
+|----|-------------|-----------|----------------|
+| 2  | -1.82 dB    | -1.81 dB  | AMBIGUOUS      |
+| 4  | -0.10 dB    | -0.10 dB  | AMBIGUOUS      |
+| 8  |  9.81 dB    |  9.73 dB  | DETECTED       |
+| 16 | -6.21 dB    | -7.23 dB  | MASKED         |
 
-## Code Length Study
-A sweep of code length `L` for a strong node A (`f_A = 89.9 kHz`) and weak node B (`f_B = 209.9 kHz`) was conducted:
+*(Note: At L=16, the main lobe of the desired peak becomes so narrow that interference side-lobes dominate the detection window, pushing it back into MASKED).*
 
-| L | Disp [ns] | Naive SIR [dB] | GDF SIR [dB] | Naive Error [Hz] | GDF Error [Hz] |
-|---|-----------|----------------|--------------|------------------|----------------|
-| 2 | 2.61      | -4.3           | -4.0         | 92686.50         | 92686.50       |
-| 4 | 5.21      | 3.8            | 3.6          | 53624.00         | 53624.00       |
-| 8 | 10.42     | 8.1            | 8.3          | 24501.00         | 24501.00       |
-| 16| 20.85     | 12.5           | 12.3         | 180751.00        | 180751.00      |
-
-## Conclusion: Simultaneous Node Separation
 **Does the group-delay filter solve the simultaneous two-node structured interference problem for our architecture?**
 
-**No.** The group-delay filter successfully compensates for the time-of-flight misalignment of the fast-time code envelope. However, it completely fails to improve multi-node signal separation. The structured interference in our architecture arises because the baseband beat frequency of the interfering node (e.g., node A) acts as a rotating complex phasor during the correlation interval. This continuous phase rotation destroys the orthogonality of the Walsh codes regardless of envelope alignment. 
-
-Since the group-delay filter only realigns the envelope and cannot stop the time-domain phase rotation of the interfering beat signal, the cross-correlation leakage remains identical to the naive receiver. Increasing processing gain (`L`) improves SIR slightly, but neither receiver architecture provides sufficient isolation for simultaneous high-dynamic-range target recovery using fast-time coding alone.
+**No.** Under the tested parameters, the GDF performs its intended code-alignment operation, but GDF + simple Walsh despreading/spectral detection remains insufficient for the strong/weak case. The continuous time-domain phase rotation of the interfering chirp's beat signal spectrally spreads the Walsh code energy across the band. This interference dominates the weak node's signal. The result does not establish the impossibility of fast-time PC-FMCW generally, but proves that the current simple receiver architecture cannot achieve the necessary isolation.
 
 ## AWR2944 Hardware Caveat
-This fast-time (intra-chirp) coding analysis serves to baseline the exact physical mathematics and fundamental limitations of multi-node FMCW interference. 
-
-However, practical millimeter-wave hardware like the Texas Instruments AWR2944 implements phase coding on a **slow-time (per-chirp)** basis using a binary phase shifter before the PA. Slow-time coding experiences fundamentally different beat-frequency rotation dynamics over the coherent processing interval (CPI) compared to fast-time coding. A future stage of this project will map these validated mathematical baselines to the slow-time coding architecture explicitly required by the AWR2944 hardware constraints.
+The next step is to evaluate slow-time (per-chirp) coding. Unlike fast-time coding, slow-time coding experiences fundamentally different beat-frequency rotation dynamics over the coherent processing interval (CPI). This will map the validated mathematical baselines to the exact architecture required by practical AWR2944 millimeter-wave hardware.

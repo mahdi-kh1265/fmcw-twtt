@@ -36,12 +36,16 @@ function [y, meta] = apply_group_delay_filter(x, Fs, S, opts)
     N_orig = length(x);
 
     if opts.use_padding
-        % Pad to at least 4*N_orig to avoid circular wrap artifacts
-        N_pad = 4 * N_orig;
+        % Zero-padded reference filter
+        % Pad to at least 4*N_orig, preferring 4096.
+        N_pad = max(4 * N_orig, 4096);
         % Force even length for simple frequency vector construction
         if mod(N_pad, 2) ~= 0
             N_pad = N_pad + 1;
         end
+        % Input samples are placed at the beginning (appended padding).
+        % This maintains the time origin at t=0.
+        % The filter phase is 0 at f=0, so no phase correction is needed.
         x_pad = [x; zeros(N_pad - N_orig, 1)];
         N = N_pad;
         X = fft(x_pad);
